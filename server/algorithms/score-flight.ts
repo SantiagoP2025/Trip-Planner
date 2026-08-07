@@ -134,6 +134,27 @@ export function scoreFlight(offer: FlightOffer, context: FlightScoringContext): 
   };
 }
 
+// Peso conjunto de los criterios de la sección 11.2 que no son el precio.
+const COMFORT_WEIGHT_TOTAL =
+  FLIGHT_SCORE_WEIGHTS.duration +
+  FLIGHT_SCORE_WEIGHTS.stops +
+  FLIGHT_SCORE_WEIGHTS.schedule +
+  FLIGHT_SCORE_WEIGHTS.conditions;
+
+// Sección 10.2, criterio "Comodidad del transporte". El precio ya entra en la
+// puntuación global como criterio propio (25 %) y calculado sobre el coste total
+// del viaje, así que aquí se excluye y se reponderan los demás criterios de la
+// sección 11.2 para que vuelvan a sumar 1. Si no, el precio contaría dos veces.
+export function calculateTransportComfortScore(breakdown: FlightScoreBreakdown): number {
+  return roundScore(
+    (breakdown.duration * FLIGHT_SCORE_WEIGHTS.duration +
+      breakdown.stops * FLIGHT_SCORE_WEIGHTS.stops +
+      breakdown.schedule * FLIGHT_SCORE_WEIGHTS.schedule +
+      breakdown.conditions * FLIGHT_SCORE_WEIGHTS.conditions) /
+      COMFORT_WEIGHT_TOTAL,
+  );
+}
+
 // Sección 10.2, criterio "Aprovechamiento del tiempo", ya normalizado.
 export function scoreUsableTime(offer: FlightOffer, context: FlightScoringContext): number {
   return roundScore(

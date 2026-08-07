@@ -86,6 +86,28 @@ export interface TripProposal {
   warnings: string[];
 }
 
+// Sección 16.3: lo que hay que poder registrar de cada generación. Es material
+// de log, no de respuesta: el endpoint decide qué parte devuelve al navegador.
+export interface TripGenerationDiagnostics {
+  flightsFound: number;
+  accommodationsFound: number;
+  activitiesFound: number;
+  evaluatedCombinations: number;
+  discardedCombinations: number;
+  // "Registrar descartes y causas": cuántas combinaciones descartó cada motivo.
+  discardReasons: Record<string, number>;
+  // "Registrar duración de cada proveedor", en milisegundos.
+  providerDurationsMs: Record<string, number>;
+}
+
+// Salida del motor de generación. `proposals` viene vacío cuando ninguna
+// combinación supera las restricciones de la sección 10.1: no es un error, es un
+// resultado legítimo que el endpoint traduce a un mensaje para el usuario.
+export interface TripGenerationResult {
+  proposals: TripProposal[];
+  diagnostics: TripGenerationDiagnostics;
+}
+
 // Sección 16.1: forma común de un error de validación de campo, en español.
 export interface ValidationError {
   field: string;

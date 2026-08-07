@@ -110,3 +110,27 @@ export function scoreAccommodation(
     total: roundScore(total),
   };
 }
+
+// Peso conjunto de los criterios de la sección 11.4 que no son ni el precio ni
+// la ubicación.
+const QUALITY_WEIGHT_TOTAL =
+  ACCOMMODATION_SCORE_WEIGHTS.rating +
+  ACCOMMODATION_SCORE_WEIGHTS.conditions +
+  ACCOMMODATION_SCORE_WEIGHTS.groupFit +
+  ACCOMMODATION_SCORE_WEIGHTS.services;
+
+// Sección 10.2, criterio "Calidad del alojamiento". La puntuación global trata
+// el precio y la ubicación como criterios propios (25 % y 15 %), así que aquí se
+// excluyen los dos y se reponderan el resto de criterios de la sección 11.4 para
+// que vuelvan a sumar 1. Si no, precio y ubicación contarían dos veces.
+export function calculateAccommodationQualityScore(
+  breakdown: AccommodationScoreBreakdown,
+): number {
+  return roundScore(
+    (breakdown.rating * ACCOMMODATION_SCORE_WEIGHTS.rating +
+      breakdown.conditions * ACCOMMODATION_SCORE_WEIGHTS.conditions +
+      breakdown.groupFit * ACCOMMODATION_SCORE_WEIGHTS.groupFit +
+      breakdown.services * ACCOMMODATION_SCORE_WEIGHTS.services) /
+      QUALITY_WEIGHT_TOTAL,
+  );
+}

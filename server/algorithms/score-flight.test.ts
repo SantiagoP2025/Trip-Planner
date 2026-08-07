@@ -3,6 +3,7 @@ import {
   buildFlightScoringContext,
   calculateConditionsScore,
   calculateScheduleScore,
+  calculateTransportComfortScore,
   calculateUsableHours,
   scoreFlight,
   scoreUsableTime,
@@ -97,5 +98,35 @@ describe('calculateUsableHours', () => {
     const conCorto = buildFlightScoringContext([barato, corto]);
     expect(scoreUsableTime(barato, conCorto)).toBe(100);
     expect(scoreUsableTime(corto, conCorto)).toBe(0);
+  });
+});
+
+// Sección 10.2, criterio "Comodidad del transporte".
+describe('calculateTransportComfortScore', () => {
+  it('ignora el precio, que la sección 10.2 puntúa como criterio propio', () => {
+    const breakdown = scoreFlight(barato, context);
+    const mismoVueloMasCaro = { ...breakdown, price: 0 };
+
+    expect(calculateTransportComfortScore(mismoVueloMasCaro)).toBe(
+      calculateTransportComfortScore(breakdown),
+    );
+  });
+
+  it('devuelve 100 cuando el vuelo es perfecto en todo lo demás', () => {
+    const perfecto = { price: 0, duration: 100, stops: 100, schedule: 100, conditions: 100, total: 0 };
+
+    expect(calculateTransportComfortScore(perfecto)).toBe(100);
+  });
+
+  it('devuelve 0 cuando el vuelo es el peor en todo lo demás', () => {
+    const pesimo = { price: 100, duration: 0, stops: 0, schedule: 0, conditions: 0, total: 0 };
+
+    expect(calculateTransportComfortScore(pesimo)).toBe(0);
+  });
+
+  it('prefiere el vuelo directo y corto al de dos escalas', () => {
+    expect(calculateTransportComfortScore(scoreFlight(barato, context))).toBeGreaterThan(
+      calculateTransportComfortScore(scoreFlight(caro, context)),
+    );
   });
 });

@@ -12,9 +12,13 @@ export interface ScoredOffer<T> {
   score: number;
 }
 
-export interface OfferPair {
-  flight: FlightOffer;
-  accommodation: AccommodationOffer;
+// Los parámetros por defecto son las ofertas crudas, que es el caso habitual.
+// El orquestador (fase 4) pasa ofertas ya enriquecidas con sus puntuaciones
+// parciales para no tener que volver a buscarlas por identificador después del
+// recorte; lo único que se les exige es tener un `id` con el que desempatar.
+export interface OfferPair<F = FlightOffer, A = AccommodationOffer> {
+  flight: F;
+  accommodation: A;
 }
 
 export interface CombineOffersOptions {
@@ -37,11 +41,11 @@ export function takeTopN<T>(
 }
 
 // Producto cartesiano de vuelos por alojamientos, ya recortados.
-export function combineOffers(
-  flights: readonly ScoredOffer<FlightOffer>[],
-  accommodations: readonly ScoredOffer<AccommodationOffer>[],
+export function combineOffers<F extends { id: string }, A extends { id: string }>(
+  flights: readonly ScoredOffer<F>[],
+  accommodations: readonly ScoredOffer<A>[],
   options: CombineOffersOptions = {},
-): OfferPair[] {
+): OfferPair<F, A>[] {
   const topFlights = takeTopN(flights, options.maxFlights ?? DEFAULT_TOP_FLIGHTS, (offer) => offer.id);
   const topAccommodations = takeTopN(
     accommodations,
@@ -49,7 +53,7 @@ export function combineOffers(
     (offer) => offer.id,
   );
 
-  const pairs: OfferPair[] = [];
+  const pairs: OfferPair<F, A>[] = [];
   for (const flight of topFlights) {
     for (const accommodation of topAccommodations) {
       pairs.push({ flight: flight.offer, accommodation: accommodation.offer });

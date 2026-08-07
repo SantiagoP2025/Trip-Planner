@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   buildAccommodationScoringContext,
+  calculateAccommodationQualityScore,
   calculateGroupFitScore,
   calculateRatingScore,
   scoreAccommodation,
@@ -85,5 +86,45 @@ describe('calculateGroupFitScore', () => {
 
   it('penaliza levemente el alojamiento sobredimensionado', () => {
     expect(calculateGroupFitScore(buildAccommodation({ id: 'a', totalPrice: 1, capacity: 6 }), 4)).toBe(80);
+  });
+});
+
+// Sección 10.2, criterio "Calidad del alojamiento".
+describe('calculateAccommodationQualityScore', () => {
+  it('ignora precio y ubicación, que la sección 10.2 puntúa como criterios propios', () => {
+    const breakdown = scoreAccommodation(medio, context, 2);
+    const mismoHotelCaroYLejos = { ...breakdown, price: 0, location: 0 };
+
+    expect(calculateAccommodationQualityScore(mismoHotelCaroYLejos)).toBe(
+      calculateAccommodationQualityScore(breakdown),
+    );
+  });
+
+  it('devuelve 100 cuando el alojamiento es perfecto en todo lo demás', () => {
+    const perfecto = { price: 0, location: 0, rating: 100, conditions: 100, groupFit: 100, services: 100, total: 0 };
+
+    expect(calculateAccommodationQualityScore(perfecto)).toBe(100);
+  });
+
+  it('devuelve 0 cuando el alojamiento es el peor en todo lo demás', () => {
+    const pesimo = { price: 100, location: 100, rating: 0, conditions: 0, groupFit: 0, services: 0, total: 0 };
+
+    expect(calculateAccommodationQualityScore(pesimo)).toBe(0);
+  });
+
+  it('prefiere el mejor valorado con desayuno y cancelación gratuita', () => {
+    const completo = buildAccommodation({
+      id: 'completo',
+      totalPrice: 600,
+      rating: 5,
+      reviewCount: 500,
+      capacity: 2,
+      breakfastIncluded: true,
+      freeCancellation: true,
+    });
+
+    expect(calculateAccommodationQualityScore(scoreAccommodation(completo, context, 2))).toBeGreaterThan(
+      calculateAccommodationQualityScore(scoreAccommodation(barato, context, 2)),
+    );
   });
 });
