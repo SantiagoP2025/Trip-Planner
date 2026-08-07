@@ -1,8 +1,10 @@
 node_modules/
 dist/
+dist-ssr/
 .vercel/
 .DS_Store
 *.log
+*.local
 
 .env
 .env.*
