@@ -15,7 +15,11 @@ export function deriveBaseCoordinate(destination: string): Coordinate {
   }
   const unsignedHash = hash >>> 0;
   const latitude = ((unsignedHash % 12000) / 100) - 60; // [-60, 60)
-  const longitude = (((unsignedHash >> 12) % 36000) / 100) - 180; // [-180, 180)
+  // `>>>` y no `>>`: el desplazamiento con signo convierte el hash a entero de
+  // 32 bits **con signo**, así que la mitad de los destinos daba un resto
+  // negativo y una longitud fuera de [-180, 180]. Lisboa salía en -428,37, que
+  // no es ningún punto de la Tierra.
+  const longitude = (((unsignedHash >>> 12) % 36000) / 100) - 180; // [-180, 180)
   return { latitude, longitude };
 }
 
@@ -27,7 +31,18 @@ export function jitterCoordinate(base: Coordinate, random: () => number, radiusK
   const latitude = base.latitude + (Math.cos(angle) * distanceKm) / KM_PER_DEGREE_LAT;
   const kmPerDegreeLon = KM_PER_DEGREE_LAT * Math.cos((base.latitude * Math.PI) / 180) || 1;
   const longitude = base.longitude + (Math.sin(angle) * distanceKm) / kmPerDegreeLon;
-  return { latitude: Math.round(latitude * 1e4) / 1e4, longitude: Math.round(longitude * 1e4) / 1e4 };
+  return {
+    latitude: Math.round(latitude * 1e4) / 1e4,
+    // Un destino cerca del antimeridiano puede desplazarse al otro lado: 180,2°
+    // no existe, es -179,8°. Sin esto, el mapa de la fase 10 dibujaría la parada
+    // fuera del mundo.
+    longitude: Math.round(wrapLongitude(longitude) * 1e4) / 1e4,
+  };
+}
+
+// Devuelve la longitud dentro de [-180, 180).
+export function wrapLongitude(longitude: number): number {
+  return ((((longitude + 180) % 360) + 360) % 360) - 180;
 }
 
 // Distancia entre dos coordenadas (fórmula de Haversine), usada por el proveedor

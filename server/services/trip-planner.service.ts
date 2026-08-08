@@ -24,9 +24,17 @@ import { buildTripScoringContext, calculateTripScore } from '../algorithms/score
 import { selectActivities } from '../algorithms/select-activities.ts';
 import { selectDiverseProposals, type ProposalCandidate } from '../algorithms/select-proposals.ts';
 import { checkHardConstraints, meetsMinimumScores } from '../algorithms/validate-trip.ts';
+import {
+  calculateTravelMatrix,
+  DEFAULT_TRANSPORT_MODE,
+  type TravelMatrix,
+} from '../algorithms/travel-matrix.ts';
 import type { AccommodationProvider } from '../providers/accommodation.provider.ts';
 import type { FlightProvider } from '../providers/flight.provider.ts';
 import type { PlacesProvider } from '../providers/places.provider.ts';
+import type { RoutesProvider } from '../providers/routes.provider.ts';
+import type { RoutePoint } from '../types/provider.ts';
+import { buildItinerary } from './build-itinerary.service.ts';
 import type { AccommodationOffer } from '../types/accommodation.ts';
 import type { ActivityCandidate } from '../types/activity.ts';
 import type { FlightOffer } from '../types/flight.ts';
@@ -54,6 +62,11 @@ export interface TripPlannerProviders {
   flights: FlightProvider;
   accommodations: AccommodationProvider;
   places: PlacesProvider;
+  // Sección 12: los tiempos de desplazamiento del itinerario salen de aquí. Es
+  // opcional porque sin él se puede seguir proponiendo vuelo y alojamiento; lo
+  // que no se puede es inventarse cuánto se tarda de un sitio a otro, así que
+  // sin proveedor de rutas simplemente no hay itinerario día a día.
+  routes?: RoutesProvider;
 }
 
 export interface TripPlannerOptions {
@@ -137,6 +150,46 @@ function recordDiscard(
   for (const reason of reasons) {
     diagnostics.discardReasons[reason] = (diagnostics.discardReasons[reason] ?? 0) + count;
   }
+}
+
+// Sección 12: la matriz de desplazamientos, en **una sola** llamada para las tres
+// propuestas. Se pide después de seleccionar y no antes: pedirla para las
+// combinaciones evaluadas sería consultar rutas de alojamientos que nadie va a
+// ver, y con un proveedor real eso se paga.
+//
+// El número de puntos ya está acotado por arriba: las actividades no pasan de
+// tres por día (sección 12.1) y el viaje no pasa de 30 noches (regla 5), así que
+// la matriz no puede crecer sin límite por mucho que pida el usuario.
+async function requestTravelMatrix(
+  routes: RoutesProvider,
+  activities: readonly ActivityCandidate[],
+  accommodations: readonly AccommodationOffer[],
+): Promise<{ matrix: TravelMatrix; durationMs: number }> {
+  const points: RoutePoint[] = [];
+  const seen = new Set<string>();
+
+  const addPoint = (point: RoutePoint): void => {
+    if (seen.has(point.id)) return;
+    seen.add(point.id);
+    points.push(point);
+  };
+
+  for (const activity of activities) {
+    addPoint({ id: activity.id, latitude: activity.latitude, longitude: activity.longitude });
+  }
+  for (const accommodation of accommodations) {
+    addPoint({
+      id: accommodation.id,
+      latitude: accommodation.latitude,
+      longitude: accommodation.longitude,
+    });
+  }
+
+  const { data, durationMs } = await timed(() =>
+    routes.calculateMatrix({ origins: points, destinations: points, mode: DEFAULT_TRANSPORT_MODE }),
+  );
+
+  return { matrix: calculateTravelMatrix(data), durationMs };
 }
 
 async function searchProviders(
@@ -381,10 +434,47 @@ export async function generateTripProposals(
   // Sección 10.6: tres propuestas, una por perfil, distintas entre sí.
   const selected = selectDiverseProposals(survivors);
 
-  const proposals: TripProposal[] = [];
-  for (const entry of selected) {
+  const chosen = selected.flatMap((entry) => {
     const combination = combinationsById.get(entry.candidate.id);
-    if (!combination) continue;
+    return combination ? [{ entry, combination }] : [];
+  });
+
+  // Sección 12: el itinerario día a día, solo para las que se van a enseñar.
+  //
+  // Si el proveedor de rutas falla, el viaje se devuelve igual y sin itinerario:
+  // es la misma degradación controlada que con el proveedor de lugares (sección
+  // 17.2). Lo que no se hace es rellenar el itinerario con tiempos inventados.
+  let travel: { matrix: TravelMatrix; durationMs: number } | null = null;
+  let routesFailed = false;
+
+  if (providers.routes && chosen.length > 0 && activityPlan.activities.length > 0) {
+    try {
+      travel = await requestTravelMatrix(
+        providers.routes,
+        activityPlan.activities,
+        chosen.map((item) => item.combination.accommodation.offer),
+      );
+      diagnostics.providerDurationsMs.routes = travel.durationMs;
+    } catch {
+      // El detalle del fallo no se pierde: la ausencia de `routes` en las
+      // duraciones es lo que la fila de auditoría lee como "no respondió"
+      // (sección 16.3). Aquí no hay logger: el handler es quien registra.
+      routesFailed = true;
+    }
+  }
+
+  const proposals: TripProposal[] = [];
+  for (const { entry, combination } of chosen) {
+    const itinerary = travel
+      ? buildItinerary({
+          request,
+          flight: combination.flight.offer,
+          accommodation: combination.accommodation.offer,
+          activities: activityPlan.activities,
+          matrix: travel.matrix,
+          budget: combination.budget,
+        })
+      : null;
 
     const explanation = {
       type: entry.type,
@@ -409,14 +499,20 @@ export async function generateTripProposals(
       budget: combination.budget,
       flight: combination.flight.offer,
       accommodation: combination.accommodation.offer,
-      // El itinerario día a día necesita matriz de desplazamientos y coordenadas
-      // verificadas del proveedor de lugares, que llegan en su propia fase
-      // (sección 12). Hasta entonces va vacío, nunca inventado.
-      itinerary: [],
+      // Sección 12. Vacío cuando no hay proveedor de rutas o cuando ha fallado:
+      // un itinerario sin tiempos de desplazamiento reales no es un itinerario,
+      // es una lista de deseos con horas puestas a ojo.
+      itinerary: itinerary?.days ?? [],
       evaluatedCombinations: diagnostics.evaluatedCombinations,
       discardedCombinations: diagnostics.discardedCombinations,
       reasons: buildProposalReasons(explanation),
-      warnings: buildProposalWarnings(explanation),
+      warnings: [
+        ...buildProposalWarnings(explanation),
+        ...(itinerary?.warnings ?? []),
+        ...(routesFailed
+          ? ['No hemos podido calcular el itinerario día a día. El resto de la propuesta es correcto.']
+          : []),
+      ],
     });
   }
 

@@ -7,6 +7,7 @@ import {
 import { MockAccommodationProvider } from '../providers/mock-accommodation.provider.ts';
 import { MockFlightProvider } from '../providers/mock-flight.provider.ts';
 import { MockPlacesProvider } from '../providers/mock-places.provider.ts';
+import { MockRoutesProvider } from '../providers/mock-routes.provider.ts';
 import type { AccommodationProvider } from '../providers/accommodation.provider.ts';
 import type { FlightProvider } from '../providers/flight.provider.ts';
 import type { PlacesProvider } from '../providers/places.provider.ts';
@@ -28,6 +29,7 @@ function mockProviders(): TripPlannerProviders {
     flights: new MockFlightProvider(FIXED_CLOCK),
     accommodations: new MockAccommodationProvider(FIXED_CLOCK),
     places: new MockPlacesProvider(),
+    routes: new MockRoutesProvider(),
   };
 }
 
@@ -138,13 +140,14 @@ describe('generateTripProposals', () => {
     expect(result.proposals.map((proposal) => proposal.rank)).toEqual([1, 2, 3]);
   });
 
-  // El itinerario día a día llega en su propia fase: aquí va vacío, nunca
-  // inventado (regla 12 de PLAN-2.md, por analogía con las coordenadas).
-  it('todavía no inventa itinerario', async () => {
+  // Sección 12: el itinerario ya se construye, y se construye con datos del
+  // proveedor de rutas. Lo que no puede es venir inventado (regla 12 de
+  // PLAN-2.md), y de eso se ocupa el bloque "itinerario" del final del fichero.
+  it('cada propuesta llega con su itinerario', async () => {
     const result = await generateTripProposals(buildRequest(), mockProviders());
 
     for (const proposal of result.proposals) {
-      expect(proposal.itinerary).toEqual([]);
+      expect(proposal.itinerary.length).toBeGreaterThan(0);
     }
   });
 
@@ -208,6 +211,9 @@ describe('generateTripProposals', () => {
       'accommodations',
       'flights',
       'places',
+      // Sección 12: el proveedor de rutas se consulta una vez, después de
+      // seleccionar, y su duración se registra como la de los demás.
+      'routes',
     ]);
   });
 
@@ -291,5 +297,121 @@ describe('generateTripProposals', () => {
     expect(result.proposals.length).toBeGreaterThan(0);
     expect(result.diagnostics.activitiesFound).toBe(0);
     expect(result.diagnostics.providerDurationsMs.places).toBeUndefined();
+  });
+});
+
+// Sección 12: el itinerario día a día, ya dentro de la propuesta.
+describe('generateTripProposals — itinerario', () => {
+  it('cada propuesta trae su itinerario día a día', async () => {
+    const result = await generateTripProposals(buildRequest(), mockProviders());
+
+    for (const proposal of result.proposals) {
+      // Ocho noches de viaje son nueve días sobre el terreno.
+      expect(proposal.itinerary).toHaveLength(8);
+      expect(proposal.itinerary.some((day) => day.items.length > 0)).toBe(true);
+    }
+  });
+
+  it('el itinerario empieza el día de salida y acaba el de vuelta', async () => {
+    const [proposal] = (await generateTripProposals(buildRequest(), mockProviders())).proposals;
+    const dias = proposal?.itinerary ?? [];
+
+    expect(dias[0]?.date).toBe('2026-09-10');
+    expect(dias[dias.length - 1]?.date).toBe('2026-09-17');
+  });
+
+  // Regla explícita de la fase: las coordenadas vienen del proveedor de lugares.
+  it('las paradas llevan coordenadas posibles, no inventadas', async () => {
+    const [proposal] = (await generateTripProposals(buildRequest(), mockProviders())).proposals;
+
+    const conCoordenadas = (proposal?.itinerary ?? [])
+      .flatMap((day) => day.items)
+      .filter((item) => item.latitude !== undefined);
+
+    expect(conCoordenadas.length).toBeGreaterThan(0);
+    for (const item of conCoordenadas) {
+      expect(item.latitude, item.id).toBeGreaterThanOrEqual(-90);
+      expect(item.latitude, item.id).toBeLessThanOrEqual(90);
+      expect(item.longitude, item.id).toBeGreaterThanOrEqual(-180);
+      expect(item.longitude, item.id).toBeLessThanOrEqual(180);
+    }
+  });
+
+  // Sección 16.3: "Registrar duración de cada proveedor".
+  it('registra la duración del proveedor de rutas', async () => {
+    const result = await generateTripProposals(buildRequest(), mockProviders());
+
+    expect(result.diagnostics.providerDurationsMs.routes).toBeGreaterThanOrEqual(0);
+  });
+
+  // Sección 17.2: "Fallo de proveedor → respuesta controlada". Igual que con el
+  // proveedor de lugares, el viaje se devuelve sin itinerario en vez de caerse.
+  it('devuelve las propuestas sin itinerario si el proveedor de rutas falla', async () => {
+    const providers: TripPlannerProviders = {
+      ...mockProviders(),
+      routes: { calculateMatrix: () => Promise.reject(new Error('Google Routes caído')) },
+    };
+
+    const result = await generateTripProposals(buildRequest(), providers);
+
+    expect(result.proposals).toHaveLength(3);
+    for (const proposal of result.proposals) {
+      expect(proposal.itinerary).toEqual([]);
+      expect(proposal.warnings.some((warning) => warning.includes('itinerario día a día'))).toBe(
+        true,
+      );
+    }
+  });
+
+  it('no filtra el detalle técnico del fallo de rutas al usuario', async () => {
+    const providers: TripPlannerProviders = {
+      ...mockProviders(),
+      routes: { calculateMatrix: () => Promise.reject(new Error('Google Routes caído')) },
+    };
+
+    const result = await generateTripProposals(buildRequest(), providers);
+
+    expect(JSON.stringify(result.proposals)).not.toContain('Google Routes');
+  });
+
+  // Sin proveedor de rutas configurado no se promete un itinerario que no se
+  // puede calcular, pero el resto de la propuesta sigue en pie.
+  it('sin proveedor de rutas devuelve el viaje sin itinerario', async () => {
+    const providers = mockProviders();
+    delete providers.routes;
+
+    const result = await generateTripProposals(buildRequest(), providers);
+
+    expect(result.proposals).toHaveLength(3);
+    expect(result.proposals[0]?.itinerary).toEqual([]);
+  });
+
+  // Una sola llamada para las tres propuestas: con un proveedor real, cada
+  // matriz se paga.
+  it('pide la matriz de desplazamientos una sola vez', async () => {
+    let calls = 0;
+    const providers: TripPlannerProviders = {
+      ...mockProviders(),
+      routes: {
+        calculateMatrix: async (request) => {
+          calls += 1;
+          return new MockRoutesProvider().calculateMatrix(request);
+        },
+      },
+    };
+
+    await generateTripProposals(buildRequest(), providers);
+
+    expect(calls).toBe(1);
+  });
+
+  // La misma búsqueda da siempre el mismo resultado, itinerario incluido.
+  it('la misma búsqueda devuelve el mismo itinerario', async () => {
+    const primero = await generateTripProposals(buildRequest(), mockProviders());
+    const segundo = await generateTripProposals(buildRequest(), mockProviders());
+
+    expect(JSON.stringify(primero.proposals[0]?.itinerary)).toBe(
+      JSON.stringify(segundo.proposals[0]?.itinerary),
+    );
   });
 });

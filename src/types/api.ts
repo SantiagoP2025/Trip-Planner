@@ -31,7 +31,11 @@ export type { FlightOffer, FlightSegment } from '../../server/types/flight.ts';
 
 export type { AccommodationOffer } from '../../server/types/accommodation.ts';
 
-export type { ItineraryDay } from '../../server/types/itinerary.ts';
+export type {
+  ItineraryDay,
+  ItineraryItem,
+  ItineraryItemType,
+} from '../../server/types/itinerary.ts';
 
 export type { SavedTrip } from '../../server/types/saved-trip.ts';
 

@@ -6,6 +6,7 @@ import { FixedWindowRateLimiter } from '../../server/http/rate-limit.ts';
 import { MockAccommodationProvider } from '../../server/providers/mock-accommodation.provider.ts';
 import { MockFlightProvider } from '../../server/providers/mock-flight.provider.ts';
 import { MockPlacesProvider } from '../../server/providers/mock-places.provider.ts';
+import { MockRoutesProvider } from '../../server/providers/mock-routes.provider.ts';
 import { createTripRepository } from '../../server/repositories/create-trip-repository.ts';
 import { BestEffortTripPersistence } from '../../server/services/trip-persistence.service.ts';
 
@@ -49,6 +50,7 @@ export default createGenerateTripHandler({
     flights: new MockFlightProvider(),
     accommodations: new MockAccommodationProvider(),
     places: new MockPlacesProvider(),
+    routes: new MockRoutesProvider(),
   },
   rateLimiter,
   persistence: new BestEffortTripPersistence(selection.repository, { onError: logError }),

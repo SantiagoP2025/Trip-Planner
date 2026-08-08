@@ -1,3 +1,4 @@
+import { DayByDay } from './DayByDay.tsx';
 import {
   formatCurrency,
   formatDateTime,
@@ -142,11 +143,14 @@ export function ProposalCard({ proposal }: { proposal: TripProposal }) {
         </section>
       )}
 
-      {/* El itinerario día a día llega en la fase 9, con coordenadas reales del
-          proveedor de lugares. Hasta entonces se dice, no se rellena con humo. */}
-      {proposal.itinerary.length === 0 && (
+      {/* Sección 12. Cuando viene vacío es que no se ha podido calcular —sin
+          proveedor de rutas no hay tiempos de desplazamiento reales— y se dice,
+          en vez de rellenarlo con humo. */}
+      {proposal.itinerary.length > 0 ? (
+        <DayByDay days={proposal.itinerary} currency={proposal.currency} />
+      ) : (
         <p className="mt-4 text-xs text-slate-500">
-          El itinerario día a día estará disponible próximamente.
+          No hemos podido preparar el itinerario día a día de esta propuesta.
         </p>
       )}
     </article>
