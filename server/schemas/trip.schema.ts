@@ -1,15 +1,20 @@
 import { z } from 'zod';
+import {
+  MAX_ADULTS,
+  MAX_BUDGET,
+  MAX_CHILDREN,
+  MAX_DIETARY_RESTRICTIONS,
+  MAX_NIGHTS,
+  MAX_PREFERENCE_LEVEL,
+  MAX_TEXT_LENGTH,
+  MAX_WALKING_MINUTES_CAP,
+  MIN_ADULTS,
+  MIN_CHILDREN,
+  MIN_TEXT_LENGTH,
+} from '../config/trip-limits.ts';
 import type { PreferenceLevel } from '../types/common.ts';
 import type { ValidationError } from '../types/trip.ts';
 
-const MIN_TEXT_LENGTH = 2;
-const MAX_TEXT_LENGTH = 100;
-const MAX_NIGHTS = 30;
-const MAX_ADULTS = 9;
-const MAX_CHILDREN = 9;
-const MAX_BUDGET = 100_000;
-const MAX_DIETARY_RESTRICTIONS = 20;
-const MAX_WALKING_MINUTES_CAP = 240;
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 const TIME_OF_DAY_PATTERN = /^([01]\d|2[0-3]):[0-5]\d$/;
 
@@ -32,8 +37,11 @@ function freeTextSchema(fieldLabel: string) {
 const preferenceLevelSchema = z
   .number()
   .int()
-  .min(0, 'La preferencia debe estar entre 0 y 3.')
-  .max(3, 'La preferencia debe estar entre 0 y 3.')
+  .min(0, `La preferencia debe estar entre 0 y ${MAX_PREFERENCE_LEVEL}.`)
+  .max(
+    MAX_PREFERENCE_LEVEL,
+    `La preferencia debe estar entre 0 y ${MAX_PREFERENCE_LEVEL}.`,
+  )
   .transform((value) => value as PreferenceLevel);
 
 const preferencesSchema = z.object({
@@ -74,12 +82,12 @@ export const tripRequestSchema = z
       adults: z
         .number()
         .int()
-        .min(1, 'Debe haber al menos un adulto.')
+        .min(MIN_ADULTS, 'Debe haber al menos un adulto.')
         .max(MAX_ADULTS, `No se admiten más de ${MAX_ADULTS} adultos.`),
       children: z
         .number()
         .int()
-        .min(0, 'El número de menores no puede ser negativo.')
+        .min(MIN_CHILDREN, 'El número de menores no puede ser negativo.')
         .max(MAX_CHILDREN, `No se admiten más de ${MAX_CHILDREN} menores.`),
     }),
     budget: z
