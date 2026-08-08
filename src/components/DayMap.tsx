@@ -120,7 +120,7 @@ export function DayMap({ items, dayKey }: DayMapProps) {
       <svg
         ref={svgRef}
         viewBox={`0 0 ${CANVAS} ${CANVAS}`}
-        className="aspect-square w-full max-w-md touch-none rounded-md border border-slate-200 bg-slate-50"
+        className="aspect-square w-full max-w-md touch-none rounded-md border border-ink-200 bg-sunset-100"
         role="img"
         aria-label={`Esquema de las ${stops.length} paradas del día, en orden de visita.`}
         onPointerDown={handlePointerDown}
@@ -167,24 +167,24 @@ export function DayMap({ items, dayKey }: DayMapProps) {
         <button
           type="button"
           onClick={() => zoom(ZOOM_STEP)}
-          className="rounded-md border border-slate-300 px-2 py-1 text-xs text-slate-700
-            hover:bg-slate-100"
+          className="rounded-md border border-ink-200 px-2 py-1 text-xs text-ink-700
+            hover:bg-sunset-100"
         >
           Acercar
         </button>
         <button
           type="button"
           onClick={() => zoom(1 / ZOOM_STEP)}
-          className="rounded-md border border-slate-300 px-2 py-1 text-xs text-slate-700
-            hover:bg-slate-100"
+          className="rounded-md border border-ink-200 px-2 py-1 text-xs text-ink-700
+            hover:bg-sunset-100"
         >
           Alejar
         </button>
         <button
           type="button"
           onClick={reset}
-          className="rounded-md border border-slate-300 px-2 py-1 text-xs text-slate-700
-            hover:bg-slate-100"
+          className="rounded-md border border-ink-200 px-2 py-1 text-xs text-ink-700
+            hover:bg-sunset-100"
         >
           Centrar
         </button>
@@ -192,7 +192,7 @@ export function DayMap({ items, dayKey }: DayMapProps) {
 
       {/* Decirlo en la propia pantalla, no solo en el código: el usuario tiene
           que saber que las posiciones son relativas y el fondo no es un mapa. */}
-      <figcaption className="mt-2 text-xs text-slate-500">
+      <figcaption className="mt-2 text-xs text-ink-700">
         Esquema de las paradas del día: enseña el orden y la posición de unas
         respecto a otras, no su ubicación sobre un mapa real.
       </figcaption>

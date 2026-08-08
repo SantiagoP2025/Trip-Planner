@@ -112,4 +112,51 @@ describe('src/index.css', () => {
     expect(css).toContain(':focus-visible');
     expect(css).toMatch(/outline:\s*2px solid/);
   });
+
+  // Fase 14, regla 18: sobre el mosaico el fondo es casi negro y el contorno
+  // oscuro de la regla de arriba no se ve. Si alguien borra esta segunda regla,
+  // el formulario entero —la pantalla principal— se queda sin foco visible, y
+  // no lo nota nadie que navegue con el ratón.
+  it('recupera el contorno en blanco sobre el fondo oscuro', () => {
+    expect(css).toMatch(/\[data-on-dark\][^{]*:focus-visible[^}]*outline-color:\s*#ffffff/);
+  });
+
+  // Fase 14, regla 19. Las seis animaciones tienen que apagarse si el sistema lo
+  // pide. Se comprueba una a una porque el fallo típico no es olvidar el bloque
+  // entero: es añadir la séptima animación y no acordarse de meterla dentro.
+  describe('prefers-reduced-motion', () => {
+    const ANIMATIONS = [
+      'fade-in-up',
+      'tab-hop',
+      'slide-in-trail',
+      'tag-swing',
+      'plane-takeoff',
+      'fade-out',
+    ];
+
+    const reducedMotionBlock =
+      /@media\s*\(prefers-reduced-motion:\s*reduce\)\s*\{([\s\S]*?)\n\}/.exec(css)?.[1] ?? '';
+
+    it('tiene su bloque', () => {
+      expect(reducedMotionBlock).not.toBe('');
+      expect(reducedMotionBlock).toMatch(/animation:\s*none/);
+    });
+
+    it.each(ANIMATIONS)('define la animación %s', (name) => {
+      expect(css).toContain(`@keyframes ${name}`);
+    });
+
+    it.each(ANIMATIONS)('apaga la animación %s', (name) => {
+      expect(reducedMotionBlock).toContain(`.animate-${name}`);
+    });
+
+    // `animation: none` a secas no basta: `fade-in-up` arranca en `opacity: 0` y
+    // quien devuelve el elemento a la vista es la propia animación. Sin
+    // devolverlo a su sitio, quien pide menos movimiento se queda con la mitad
+    // de la pantalla en blanco, que es peor que la animación.
+    it('devuelve los elementos a su sitio en vez de dejarlos invisibles', () => {
+      expect(reducedMotionBlock).toMatch(/opacity:\s*1/);
+      expect(reducedMotionBlock).toMatch(/transform:\s*none/);
+    });
+  });
 });

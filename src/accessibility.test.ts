@@ -48,4 +48,30 @@ describe('contraste', () => {
 
     expect(offenders).toEqual([]);
   });
+
+  // Fase 14. `ink-500` es el tono de apoyo de la paleta y sobre el crema del
+  // fondo se queda en 3,90: vale para un borde o un icono, no para texto.
+  // `ink-700` llega a 7,93.
+  //
+  // Es una trampa fácil de pisar, porque el gris que sustituyó —`slate-500`
+  // sobre blanco— sí llegaba, y el cambio de paleta lo bajó sin que se viera.
+  it('ningún texto usa ink-500', () => {
+    const offenders = FILES.filter(({ content }) => /text-ink-500/.test(content)).map(
+      ({ path }) => path,
+    );
+
+    expect(offenders).toEqual([]);
+  });
+
+  // Fase 14, regla 18: un blanco translúcido sobre una foto no cumple por mucha
+  // capa oscura que haya encima. El peor caso no es la foto media, es el píxel
+  // blanco justo debajo de la letra: sobre él, y con la capa al 80%, el blanco
+  // al 80% se queda en 4,69 y el del 75% ya cae a 4,24. De ahí el corte.
+  it('no hay texto blanco muy translúcido sobre el mosaico', () => {
+    const offenders = FILES.filter(({ content }) =>
+      /text-white\/(?:[1-7]\d|[1-9])\b/.test(content),
+    ).map(({ path }) => path);
+
+    expect(offenders).toEqual([]);
+  });
 });

@@ -30,7 +30,7 @@ export function SaveTripButton({ tripId, proposalType }: SaveTripButtonProps) {
 
   if (authStatus !== 'authenticated') {
     return (
-      <p className="text-sm text-slate-600">
+      <p className="text-sm text-ink-700">
         <Link to="/cuenta" className="font-medium text-sky-700 underline hover:text-sky-900">
           Entra en tu cuenta
         </Link>{' '}
@@ -41,7 +41,7 @@ export function SaveTripButton({ tripId, proposalType }: SaveTripButtonProps) {
 
   if (!tripId) {
     return (
-      <p className="text-sm text-slate-500">
+      <p className="text-sm text-ink-700">
         Este viaje no se ha podido registrar, así que no puede guardarse. Vuelve a buscarlo dentro
         de unos minutos.
       </p>

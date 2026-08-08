@@ -93,11 +93,44 @@ El módulo está partido en tres, y la partición es lo que lo hace probable:
 
 **Texto.** El PDF usa las fuentes estándar, que no van dentro del fichero y codifican en WinAnsi. Cubre el español entero —acentos, eñes, aperturas, el euro— pero no una flecha ni un emoji, y `drawText` lanza con lo que no cubre. Por eso todo el texto pasa por `sanitizePdfText()`: lo que no cabe se marca, no se borra en silencio. La alternativa sería incrustar una fuente Unicode completa, que son varios cientos de kilobytes más por descarga.
 
+## Diseño
+
+El sistema de diseño entero vive en `src/index.css`: los tokens de color, las dos familias tipográficas y las seis animaciones. Nada de eso se repite en los componentes.
+
+**Color.** Coral (`sunset`) para la marca y los acentos, turquesa (`lagoon`) para las acciones, y un tono tierra (`ink`) en lugar de los grises neutros. Lo último es lo que le quita el aspecto de plantilla: el gris de fábrica es lo que comparten todas.
+
+**Tipografía.** Fraunces para títulos, etiquetas y el botón principal; Inter para el cuerpo.
+
+**El color de cada nivel de propuesta** está en `src/constants/proposalTheme.ts` y en ningún otro sitio, para que la tarjeta y las pestañas del itinerario de dentro no acaben de dos colores distintos.
+
+**Los iconos son once rutas SVG** en `src/components/Icon.tsx`, sin librería: el paquete más pequeño que los trae añade decenas de kilobytes para usar el diez por ciento.
+
+**Las animaciones se apagan con `prefers-reduced-motion`**, las seis, y `project-config.test.ts` lo comprueba una a una. El fallo típico no es olvidar el bloque: es añadir la séptima animación y no meterla dentro.
+
+### Fotografías del mosaico
+
+El fondo de la pantalla de búsqueda son diez fotografías de Wikimedia Commons, fijas, sin proveedor ni clave de nadie. La mayoría están bajo licencias que **exigen citar autor y licencia**, así que la atribución viaja en `src/constants/collagePhotos.ts`, junto a cada URL, y el pie de la pantalla la pinta desde esa misma lista: si se cambia una foto, cambia su crédito.
+
+| Foto | Autor | Licencia |
+| --- | --- | --- |
+| Cataratas del Iguazú | Mariordo (Mario Roberto Durán Ortiz) | CC BY-SA 4.0 |
+| Hutongs de Pekín | Autor desconocido | Dominio público |
+| Rocinha, Río de Janeiro | Diego Baravelli | CC BY-SA 4.0 |
+| Angkor Wat | Fuzheado | CC BY-SA 2.0 |
+| El Cervino desde la Domhütte | chil / Zacharie Grossen | CC BY-SA 3.0 |
+| Capadocia, Turquía | Antonio Cristofaro | CC BY 3.0 |
+| Bora Bora desde la Estación Espacial | NASA Johnson Space Center | Dominio público |
+| Dunas de Merzouga | Bjørn Christian Tørrissen | CC BY-SA 3.0 |
+| Gran Cañón desde Pima Point | Chensiyuan | CC BY-SA 4.0 |
+| Aurora boreal en Alaska | Joshua Strang (US Air Force) | Dominio público |
+
 ## Accesibilidad
 
 **El foco visible lo pone una sola regla**, en `src/index.css`, y ningún componente repite utilidades de foco. Antes cada botón llevaba `focus:outline-none focus:ring-2`, con dos problemas: se olvida —el botón número dieciocho se queda sin indicador y no lo nota quien lo escribe, porque navega con el ratón— y `ring` es un `box-shadow`, que el modo de alto contraste de Windows descarta. Un `outline` sobrevive. `src/accessibility.test.ts` comprueba que nadie vuelve a apagarlo.
 
 **Contraste.** Los botones macizos usan `sky-700` y no `sky-600`: con texto blanco encima, `sky-600` se queda en 4,1 y el mínimo para texto normal es 4,5. Lo mismo en las chinchetas del mapa y del PDF, que llevan el número de la parada en blanco.
+
+**Contraste sobre las fotos.** La pantalla de búsqueda va sobre un mosaico, y ahí el caso peor no es la foto media: es un píxel blanco —la nieve del Cervino, la espuma del Iguazú— justo debajo de una letra. Medido contra ese píxel, tres cosas no llegaban al 4,5 y se corrigieron: la capa oscura subió del 72 % al 80 %, el subrayado de los campos pasó de blanco al 30 % (1,06, y es la única señal de que ahí hay un campo) al 70 %, y los textos de apoyo de las pantallas claras dejaron `ink-500` (3,90) por `ink-700` (7,93). `src/accessibility.test.ts` comprueba las dos últimas.
 
 **Las pestañas de los días llevan el patrón entero**: panel asociado, `aria-controls`, un solo tabulador para entrar en el grupo y flechas, Inicio y Fin para moverse dentro. Antes tenían los roles pero no el comportamiento, y eso es peor que no tenerlos: el rol anuncia "pestaña 2 de 8" y promete unas flechas que no estaban.
 
@@ -115,7 +148,7 @@ El bundle principal son ~353 kB (108 kB comprimido) y es casi todo React, React 
 
 Los nombres de los fragmentos se fijan en `vite.config.ts`. Por defecto salían `dist-*.js` y `es-*.js`, que vienen del fichero de entrada de cada paquete y no dicen nada: con nombre, una regresión de tamaño tiene dueño en cuanto se mira la salida de `npm run build`.
 
-La aplicación no carga ninguna imagen ni ninguna fuente web: los tipos son los del sistema y lo único ilustrado es el esquema del mapa, que es SVG.
+Desde la fase 14 sí hay fuentes web —Fraunces e Inter, desde Google Fonts, con `display=swap` para que el texto se lea mientras llegan— y diez fotografías en la pantalla de búsqueda, todas con `loading="lazy"` y con un color de reserva si alguna falla. El resto de lo ilustrado sigue siendo SVG: el esquema del mapa y los once iconos.
 
 ## Despliegue
 

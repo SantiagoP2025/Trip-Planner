@@ -1,21 +1,210 @@
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700&display=swap");
 @import "tailwindcss";
 
-/* Foco visible, en un solo sitio.
+/* Fase 14: el sistema de diseño entero vive aquí.
  *
- * Antes cada botón repetía `focus:outline-none focus:ring-2 focus:ring-sky-500`,
- * y eso tenía dos problemas. El primero es que se olvida: el botón número
- * dieciocho se queda sin indicador y nadie lo nota, porque quien lo escribe
- * navega con el ratón. El segundo es que `ring` es un `box-shadow`, y en el modo
- * de alto contraste de Windows los `box-shadow` se descartan: justo la gente que
- * más necesita ver el foco se quedaba sin verlo.
- *
- * Un `outline` sobrevive al alto contraste, y esta regla lo pone en todo lo que
- * se pueda enfocar, sin que haya que acordarse. `:focus-visible` y no `:focus`
- * para que el anillo salga al navegar con el teclado y no al hacer clic. */
+ * Coral (`sunset`) para la marca y los acentos, turquesa (`lagoon`) para las
+ * acciones, y un tono tierra (`ink`) en lugar de los grises neutros: eso último
+ * es lo que le quita el aspecto de plantilla, porque el gris de fábrica es lo
+ * que comparten todas. */
+@theme {
+  --color-sunset-50: #fff8f0;
+  --color-sunset-100: #ffe8de;
+  --color-sunset-200: #ffd1be;
+  --color-sunset-400: #ff9a78;
+  --color-sunset-500: #ff7e5f;
+  --color-sunset-600: #f2603d;
+  --color-sunset-700: #d1471f;
+
+  --color-lagoon-50: #ecfdfa;
+  --color-lagoon-100: #cff7f1;
+  --color-lagoon-400: #2dd4c4;
+  --color-lagoon-500: #14b8a6;
+  --color-lagoon-600: #0f9488;
+  --color-lagoon-700: #0c766d;
+
+  --color-ink-900: #3f2e29;
+  --color-ink-700: #5c4a42;
+  --color-ink-500: #8a7a72;
+  --color-ink-200: #e8dcd3;
+
+  --font-heading: "Fraunces", "system-ui", serif;
+  --font-body: "Inter", "system-ui", sans-serif;
+}
+
 @layer base {
+  body {
+    background-color: var(--color-sunset-50);
+    color: var(--color-ink-900);
+    font-family: var(--font-body);
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-heading);
+  }
+
+  /* Foco visible, en un solo sitio.
+   *
+   * Antes cada botón repetía `focus:outline-none focus:ring-2 focus:ring-sky-500`,
+   * y eso tenía dos problemas. El primero es que se olvida: el botón número
+   * dieciocho se queda sin indicador y nadie lo nota, porque quien lo escribe
+   * navega con el ratón. El segundo es que `ring` es un `box-shadow`, y en el modo
+   * de alto contraste de Windows los `box-shadow` se descartan: justo la gente que
+   * más necesita ver el foco se quedaba sin verlo.
+   *
+   * Un `outline` sobrevive al alto contraste, y esta regla lo pone en todo lo que
+   * se pueda enfocar, sin que haya que acordarse. `:focus-visible` y no `:focus`
+   * para que el anillo salga al navegar con el teclado y no al hacer clic.
+   *
+   * Fase 14: el color pasa a `ink-900` porque el fondo general ya no es blanco
+   * sino `sunset-50`, y contra ese crema el marrón oscuro tiene mucho más
+   * contraste que el azul que había. */
   :focus-visible {
-    outline: 2px solid var(--color-sky-700);
+    outline: 2px solid var(--color-ink-900);
     outline-offset: 2px;
     border-radius: 2px;
+  }
+
+  /* Fase 14, regla 18: sobre el mosaico el fondo es casi negro, y un contorno
+   * `ink-900` ahí no se ve. Todo lo que va sobre la foto se marca con
+   * `data-on-dark` y recupera el contorno en blanco. Sin esto, el formulario
+   * entero se quedaría sin foco visible, que es exactamente la regresión que la
+   * fase prohíbe. */
+  [data-on-dark] :focus-visible,
+  [data-on-dark]:focus-visible {
+    outline-color: #ffffff;
+  }
+
+  /* Chromium pinta un fondo sólido en los campos autocompletados que ningún CSS
+   * normal tumba, y sobre el fondo oscuro eso deja los campos en blanco. El
+   * `box-shadow` gigante hacia dentro es el apaño estándar: repinta el interior
+   * del campo sin tocar el fondo real, y la transición imposible evita que el
+   * color vuelva a asomar al enfocar. */
+  [data-on-dark] input:-webkit-autofill,
+  [data-on-dark] input:-webkit-autofill:hover,
+  [data-on-dark] input:-webkit-autofill:focus,
+  [data-on-dark] input:autofill {
+    -webkit-text-fill-color: #ffffff;
+    caret-color: #ffffff;
+    box-shadow: 0 0 0 1000px transparent inset;
+    transition: background-color 9999s ease-in-out 0s;
+  }
+}
+
+/* Las seis animaciones de la fase.
+ *
+ * `tag-swing` y `tab-hop` llevan `cubic-bezier(0.34, 1.56, 0.64, 1)`: pasa de
+ * largo y vuelve, y ese rebote es la mitad del carácter de la interfaz. */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes tab-hop {
+  0% {
+    transform: translateY(0) scale(1);
+  }
+  45% {
+    transform: translateY(-7px) scale(1.08);
+  }
+  100% {
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes slide-in-trail {
+  from {
+    opacity: 0;
+    transform: translateX(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes tag-swing {
+  0% {
+    transform: rotate(0deg);
+  }
+  35% {
+    transform: rotate(-5deg);
+  }
+  70% {
+    transform: rotate(3deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+@keyframes plane-takeoff {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(60px, -40px) rotate(-18deg);
+    opacity: 0;
+  }
+}
+
+@keyframes fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@utility animate-fade-in-up {
+  animation: fade-in-up 0.45s ease-out both;
+}
+
+@utility animate-tab-hop {
+  animation: tab-hop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@utility animate-slide-in-trail {
+  animation: slide-in-trail 0.35s ease-out both;
+}
+
+@utility animate-tag-swing {
+  animation: tag-swing 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@utility animate-plane-takeoff {
+  animation: plane-takeoff 0.45s ease-in forwards;
+}
+
+@utility animate-fade-out {
+  animation: fade-out 0.3s ease-out forwards;
+}
+
+/* Regla 19 de la fase: las seis se apagan si el sistema lo pide.
+ *
+ * `animation: none` a secas dejaría los elementos de `fade-in-up` invisibles
+ * para siempre, porque su estado inicial es `opacity: 0` y quien lo quita es la
+ * propia animación. Por eso además se devuelven a su sitio: quien pide menos
+ * movimiento quiere ver la pantalla quieta, no vacía. */
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in-up,
+  .animate-tab-hop,
+  .animate-slide-in-trail,
+  .animate-tag-swing,
+  .animate-plane-takeoff,
+  .animate-fade-out {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
   }
 }

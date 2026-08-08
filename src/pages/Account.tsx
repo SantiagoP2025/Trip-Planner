@@ -22,7 +22,7 @@ type Mode = 'signIn' | 'signUp';
 type Status = 'idle' | 'submitting' | 'done';
 
 const inputClass =
-  'rounded-md border border-slate-300 bg-white px-3 py-2 text-slate-900 shadow-sm ' +
+  'rounded-md border border-ink-200 bg-white px-3 py-2 text-ink-900 shadow-sm ' +
   'focus:border-sky-500';
 
 function Account() {
@@ -123,10 +123,10 @@ function Account() {
       </Link>
 
       <header className="mt-4 mb-6">
-        <h1 className="text-3xl font-semibold text-slate-900">
+        <h1 className="text-3xl font-semibold text-ink-900">
           {mode === 'signIn' ? 'Entrar' : 'Crear cuenta'}
         </h1>
-        <p className="mt-2 text-slate-600">
+        <p className="mt-2 text-ink-700">
           Con una cuenta puedes guardar los viajes que te interesen y volver a ellos desde
           cualquier dispositivo.
         </p>
@@ -202,7 +202,7 @@ function Account() {
         </button>
       </form>
 
-      <p className="mt-6 text-sm text-slate-600">
+      <p className="mt-6 text-sm text-ink-700">
         {mode === 'signIn' ? '¿Todavía no tienes cuenta?' : '¿Ya tienes cuenta?'}{' '}
         <button
           type="button"

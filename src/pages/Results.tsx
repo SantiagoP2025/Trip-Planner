@@ -3,7 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider.tsx';
 import { ProposalCard } from '../components/ProposalCard.tsx';
 import { SaveTripButton } from '../components/SaveTripButton.tsx';
-import { SessionBar } from '../components/SessionBar.tsx';
+import { NavBar } from '../components/NavBar.tsx';
 import { generateTrip, TripApiError } from '../services/trip-api.client.ts';
 import { fromSearchParams } from '../services/trip-search-params.ts';
 import { useDocumentTitle } from '../services/use-document-title.ts';
@@ -22,13 +22,19 @@ type Status = 'loading' | 'success' | 'error';
 
 function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <main className="mx-auto max-w-4xl px-4 py-10">
-      <SessionBar />
-      <Link to="/" className="text-sm text-sky-700 underline hover:text-sky-900">
-        ← Cambiar la búsqueda
-      </Link>
-      {children}
-    </main>
+    <>
+      <NavBar variant="solid" />
+      <main className="mx-auto max-w-4xl px-4 py-10">
+        <Link
+          to="/"
+          className="inline-flex items-center gap-1 text-sm font-medium text-lagoon-700
+            hover:text-lagoon-600"
+        >
+          ← Cambiar la búsqueda
+        </Link>
+        {children}
+      </main>
+    </>
   );
 }
 
@@ -136,10 +142,10 @@ function Results() {
   return (
     <Layout>
       <header className="mt-4 mb-8">
-        <h1 className="text-3xl font-semibold text-slate-900">
+        <h1 className="text-3xl font-semibold text-ink-900">
           {request.origin} → {request.destination}
         </h1>
-        <p className="mt-1 text-slate-600">
+        <p className="mt-1 text-ink-700">
           {request.travelers.adults} {request.travelers.adults === 1 ? 'adulto' : 'adultos'}
           {request.travelers.children > 0 &&
             ` y ${request.travelers.children} ${
@@ -151,8 +157,8 @@ function Results() {
       {/* Regla 15: cargando, éxito y error, los tres visibles. */}
       {status === 'loading' && (
         <div role="status" aria-live="polite" className="py-12 text-center">
-          <p className="text-slate-700">Buscando las mejores combinaciones…</p>
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="text-ink-700">Buscando las mejores combinaciones…</p>
+          <p className="mt-1 text-sm text-ink-700">
             Estamos comparando vuelos y alojamientos. Tarda unos segundos.
           </p>
         </div>

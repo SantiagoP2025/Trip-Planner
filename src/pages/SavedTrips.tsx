@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider.tsx';
 import type { ItineraryEditing } from '../components/DayByDay.tsx';
 import { ProposalCard } from '../components/ProposalCard.tsx';
-import { SessionBar } from '../components/SessionBar.tsx';
+import { NavBar } from '../components/NavBar.tsx';
 import { formatDate } from '../services/format.ts';
 import {
   revertItineraryEdit,
@@ -28,13 +28,19 @@ type Status = 'loading' | 'ready' | 'error';
 
 function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <main className="mx-auto max-w-4xl px-4 py-10">
-      <SessionBar />
-      <Link to="/" className="text-sm text-sky-700 underline hover:text-sky-900">
-        ← Buscar otro viaje
-      </Link>
-      {children}
-    </main>
+    <>
+      <NavBar variant="solid" />
+      <main className="mx-auto max-w-4xl px-4 py-10">
+        <Link
+          to="/"
+          className="inline-flex items-center gap-1 text-sm font-medium text-lagoon-700
+            hover:text-lagoon-600"
+        >
+          ← Buscar otro viaje
+        </Link>
+        {children}
+      </main>
+    </>
   );
 }
 
@@ -214,7 +220,7 @@ function SavedTrips() {
   return (
     <Layout>
       <header className="mt-4 mb-8">
-        <h1 className="text-3xl font-semibold text-slate-900">Mis viajes guardados</h1>
+        <h1 className="text-3xl font-semibold text-ink-900">Mis viajes guardados</h1>
       </header>
 
       {cacheWarning && (
@@ -259,14 +265,14 @@ function SavedTrips() {
       )}
 
       {status === 'loading' && savedTrips.length === 0 && (
-        <p role="status" className="py-12 text-center text-slate-700">
+        <p role="status" className="py-12 text-center text-ink-700">
           Cargando tus viajes…
         </p>
       )}
 
       {status === 'ready' && savedTrips.length === 0 && (
-        <div className="rounded-md border border-slate-200 bg-white px-4 py-8 text-center">
-          <p className="text-slate-700">Todavía no has guardado ningún viaje.</p>
+        <div className="rounded-md border border-ink-200 bg-white px-4 py-8 text-center">
+          <p className="text-ink-700">Todavía no has guardado ningún viaje.</p>
           <Link
             to="/"
             className="mt-3 inline-block font-medium text-sky-700 underline hover:text-sky-900"
@@ -279,7 +285,7 @@ function SavedTrips() {
       {savedTrips.length > 0 && (
         <div className="flex flex-col gap-8">
           {fromCache && status === 'loading' && (
-            <p role="status" className="text-sm text-slate-500">
+            <p role="status" className="text-sm text-ink-700">
               Actualizando la lista…
             </p>
           )}
@@ -288,8 +294,8 @@ function SavedTrips() {
             <section key={trip.id} className="flex flex-col gap-3">
               <header className="flex flex-wrap items-baseline justify-between gap-2">
                 <div>
-                  <h2 className="text-xl font-semibold text-slate-900">{trip.title}</h2>
-                  <p className="text-sm text-slate-600">
+                  <h2 className="text-xl font-semibold text-ink-900">{trip.title}</h2>
+                  <p className="text-sm text-ink-700">
                     {formatDate(trip.departureDate)} — {formatDate(trip.returnDate)}
                   </p>
                 </div>
@@ -297,8 +303,8 @@ function SavedTrips() {
                   type="button"
                   onClick={() => handleDelete(trip.id)}
                   disabled={deletingId === trip.id}
-                  className="rounded-md border border-slate-300 px-3 py-1.5 text-sm text-slate-700
-                    hover:bg-slate-50 disabled:opacity-60"
+                  className="rounded-md border border-ink-200 px-3 py-1.5 text-sm text-ink-700
+                    hover:bg-sunset-100 disabled:opacity-60"
                 >
                   {deletingId === trip.id ? 'Borrando…' : 'Quitar de mis viajes'}
                 </button>

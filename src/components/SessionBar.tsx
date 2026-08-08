@@ -2,17 +2,38 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider.tsx';
 
-// Barra de sesión: dice quién está dentro y deja salir. Aparece en todas las
-// pantallas para que "mis viajes" esté siempre a un clic.
+// Barra de sesión: dice quién está dentro y deja salir.
 //
 // Regla 15: salir también es una operación del usuario, así que tiene sus tres
 // estados. Un `signOut` que falla en silencio deja al usuario pulsando un botón
 // que aparentemente no hace nada.
+//
+// Fase 14: vive dentro de `NavBar`, que es quien pone ahora el enlace a "Mis
+// viajes". Aquí queda solo la identidad, para que el enlace no salga dos veces.
 
-export function SessionBar() {
+type Tone = 'light' | 'dark';
+
+const STYLES: Record<Tone, { email: string; button: string; link: string }> = {
+  light: {
+    email: 'text-ink-700',
+    button: 'border-ink-200 text-ink-700 hover:bg-sunset-100',
+    link: 'text-lagoon-700 hover:text-lagoon-600',
+  },
+  dark: {
+    // Sobre la capa oscura del mosaico: blanco casi puro, porque un blanco al
+    // 60% sobre una foto no cumple contraste por mucha capa que haya encima
+    // (regla 18 de la fase).
+    email: 'text-white/85',
+    button: 'border-white/40 text-white hover:bg-white/15',
+    link: 'text-white hover:bg-white/15',
+  },
+};
+
+export function SessionBar({ tone = 'light' }: { tone?: Tone }) {
   const { status, user, signOut } = useAuth();
   const [signingOut, setSigningOut] = useState(false);
   const [error, setError] = useState('');
+  const styles = STYLES[tone];
 
   async function handleSignOut() {
     setSigningOut(true);
@@ -44,28 +65,27 @@ export function SessionBar() {
     <div className="flex flex-wrap items-center justify-end gap-3 text-sm">
       {status === 'authenticated' ? (
         <>
-          <Link to="/viajes" className="font-medium text-sky-700 underline hover:text-sky-900">
-            Mis viajes
-          </Link>
-          <span className="text-slate-500">{user?.email}</span>
+          <span className={styles.email}>{user?.email}</span>
           <button
             type="button"
             onClick={handleSignOut}
             disabled={signingOut}
-            className="rounded-md border border-slate-300 px-3 py-1.5 text-slate-700
-              hover:bg-slate-50 disabled:opacity-60"
+            className={`rounded-full border px-3 py-1.5 disabled:opacity-60 ${styles.button}`}
           >
             {signingOut ? 'Cerrando…' : 'Cerrar sesión'}
           </button>
         </>
       ) : (
-        <Link to="/cuenta" className="font-medium text-sky-700 underline hover:text-sky-900">
+        <Link
+          to="/cuenta"
+          className={`rounded-full px-3 py-1.5 font-medium ${styles.link}`}
+        >
           Entrar o crear cuenta
         </Link>
       )}
 
       {error && (
-        <p role="alert" className="w-full text-right text-red-700">
+        <p role="alert" className={`w-full text-right ${tone === 'dark' ? 'text-sunset-200' : 'text-red-700'}`}>
           {error}
         </p>
       )}

@@ -1,5 +1,7 @@
 import { useId, useMemo, useState, type FormEvent, type KeyboardEvent } from 'react';
 import { DayMap } from './DayMap.tsx';
+import { Icon } from './Icon.tsx';
+import { PROPOSAL_THEMES, type ProposalTheme } from '../constants/proposalTheme.ts';
 import { formatCurrency, formatDate, formatDuration, formatTime } from '../services/format.ts';
 import { hasCoordinates } from '../services/map-projection.ts';
 import { ITINERARY_TYPE_LABELS } from '../services/labels.ts';
@@ -21,12 +23,12 @@ import type { ItineraryDay, ItineraryEdit, ItineraryItem, ItineraryItemType } fr
 
 const TYPE_STYLES: Record<ItineraryItemType, string> = {
   arrival: 'bg-sky-100 text-sky-800',
-  transfer: 'bg-slate-100 text-slate-700',
+  transfer: 'bg-sunset-100 text-ink-700',
   hotel: 'bg-violet-100 text-violet-800',
   meal: 'bg-amber-100 text-amber-900',
   visit: 'bg-emerald-100 text-emerald-800',
-  walk: 'bg-slate-100 text-slate-700',
-  free_time: 'bg-slate-100 text-slate-600',
+  walk: 'bg-sunset-100 text-ink-700',
+  free_time: 'bg-sunset-100 text-ink-700',
 };
 
 // Fase 11: lo que hace falta para poder editar. Ausente en la pantalla de
@@ -41,7 +43,7 @@ export interface ItineraryEditing {
 type EditStatus = 'idle' | 'saving' | 'saved' | 'error';
 
 const inputClass =
-  'w-full rounded-md border border-slate-300 bg-white px-2 py-1 text-sm text-slate-900 ' +
+  'w-full rounded-md border border-ink-200 bg-white px-2 py-1 text-sm text-ink-900 ' +
   'focus:border-sky-500';
 
 function ItemEditor({
@@ -87,7 +89,7 @@ function ItemEditor({
   return (
     <form onSubmit={handleSubmit} className="mt-2 flex flex-col gap-2">
       <div>
-        <label htmlFor={`${fieldId}-title`} className="text-xs font-medium text-slate-700">
+        <label htmlFor={`${fieldId}-title`} className="text-xs font-medium text-ink-700">
           Título
         </label>
         <input
@@ -100,7 +102,7 @@ function ItemEditor({
       </div>
 
       <div>
-        <label htmlFor={`${fieldId}-description`} className="text-xs font-medium text-slate-700">
+        <label htmlFor={`${fieldId}-description`} className="text-xs font-medium text-ink-700">
           Notas
         </label>
         <textarea
@@ -131,8 +133,8 @@ function ItemEditor({
         <button
           type="button"
           onClick={onClose}
-          className="rounded-md border border-slate-300 px-3 py-1 text-xs text-slate-700
-            hover:bg-slate-100"
+          className="rounded-md border border-ink-200 px-3 py-1 text-xs text-ink-700
+            hover:bg-sunset-100"
         >
           Cancelar
         </button>
@@ -183,7 +185,7 @@ function Item({
 
   return (
     <li className="flex gap-3 py-2">
-      <p className="w-24 shrink-0 tabular-nums text-sm text-slate-500">
+      <p className="w-24 shrink-0 tabular-nums text-sm text-ink-700">
         {formatTime(item.startTime)}–{formatTime(item.endTime)}
       </p>
 
@@ -194,7 +196,7 @@ function Item({
           >
             {ITINERARY_TYPE_LABELS[item.type]}
           </span>
-          <p className={`font-medium text-slate-900 ${isEdited ? 'italic' : ''}`}>{title}</p>
+          <p className={`font-medium text-ink-900 ${isEdited ? 'italic' : ''}`}>{title}</p>
           {/* Se distingue visualmente lo editado de lo original. No basta con la
               cursiva: quien no distingue tipografías necesita el texto. */}
           {isEdited && (
@@ -204,7 +206,7 @@ function Item({
           )}
         </div>
 
-        <p className="mt-0.5 text-sm text-slate-600">
+        <p className="mt-0.5 text-sm text-ink-700">
           {formatDuration(item.durationMinutes)}
           {item.travelMinutesFromPrevious !== undefined &&
             item.travelMinutesFromPrevious > 0 &&
@@ -218,7 +220,7 @@ function Item({
             visita es su categoría ("Museo"), que ya dice la etiqueta de arriba:
             repetirla sería ruido, y no es algo que nadie haya escrito. */}
         {edit?.description !== undefined && (
-          <p className="mt-0.5 text-sm text-slate-700">{edit.description}</p>
+          <p className="mt-0.5 text-sm text-ink-700">{edit.description}</p>
         )}
 
         {item.bookingRequired && (
@@ -228,7 +230,7 @@ function Item({
         {/* Sección 12.1: "Marcar datos no verificados". Lo estimado se dice, no
             se disimula: es la diferencia entre una propuesta y una promesa. */}
         {item.verificationStatus !== 'verified' && (
-          <p className="mt-0.5 text-xs text-slate-500">
+          <p className="mt-0.5 text-xs text-ink-700">
             {item.notes?.join(' ') ?? 'Horario estimado, pendiente de confirmar.'}
           </p>
         )}
@@ -248,7 +250,7 @@ function Item({
                 type="button"
                 onClick={handleRevert}
                 disabled={revertStatus === 'saving'}
-                className="text-xs font-medium text-slate-600 underline hover:text-slate-900
+                className="text-xs font-medium text-ink-700 underline hover:text-ink-900
                   disabled:opacity-60"
               >
                 {revertStatus === 'saving' ? 'Deshaciendo…' : 'Volver al original'}
@@ -280,10 +282,16 @@ export function DayByDay({
   days,
   currency,
   editing,
+  // Fase 14: el color viene de la propuesta a la que pertenece el itinerario, y
+  // no lo elige este componente. Sin esto, la tarjeta salía de un color y las
+  // pestañas de dentro de otro. Opcional porque la pantalla de viajes guardados
+  // pinta itinerarios sueltos.
+  theme = PROPOSAL_THEMES.recommended,
 }: {
   days: ItineraryDay[];
   currency: string;
   editing?: ItineraryEditing;
+  theme?: ProposalTheme;
 }) {
   const groupId = useId();
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
@@ -339,7 +347,7 @@ export function DayByDay({
 
   return (
     <section className="mt-4">
-      <h3 className="text-sm font-semibold text-slate-900">Día a día</h3>
+      <h3 className="text-sm font-semibold text-ink-900">Día a día</h3>
 
       {/* Un día cada vez: el itinerario de una semana en una sola lista no se
           lee, y el mapa es "el mapa del día seleccionado".
@@ -367,31 +375,47 @@ export function DayByDay({
               // circula con las flechas.
               tabIndex={isSelected ? 0 : -1}
               onClick={() => setSelectedDate(day.date)}
-              className={`rounded-md px-3 py-1 text-xs font-medium ${
+              className={`relative rounded-full px-3 py-1 text-xs font-medium ${
                   isSelected
-                    ? 'bg-sky-700 text-white'
-                    : 'border border-slate-300 text-slate-700 hover:bg-slate-100'
+                    ? theme.tabActive
+                    : 'border border-ink-200 text-ink-700 hover:bg-sunset-100'
                 }`}
             >
               Día {index + 1}
+              {/* La huella que salta y aterriza bajo el día activo. El `key` es
+                  la fecha: al cambiar de día React monta otra huella y la
+                  animación arranca sola, sin tener que reiniciarla a mano. */}
+              {isSelected && (
+                <span
+                  key={day.date}
+                  aria-hidden="true"
+                  className={`animate-tab-hop absolute -bottom-3 left-1/2 -translate-x-1/2
+                    ${theme.text}`}
+                >
+                  <Icon name="footprint" size={12} filled />
+                </span>
+              )}
             </button>
           );
         })}
       </div>
 
+      {/* Igual que la huella: el `key` hace que el panel se vuelva a montar al
+          cambiar de día, y con ello entra deslizándose desde la derecha. */}
       <article
+        key={selectedDay.date}
         id={panelId}
         role="tabpanel"
         aria-labelledby={tabId(selectedDay.date)}
         tabIndex={0}
-        className="mt-3"
+        className="animate-slide-in-trail mt-5"
       >
-        <h4 className="text-sm font-medium text-slate-700">{formatDate(selectedDay.date)}</h4>
+        <h4 className="text-sm font-medium text-ink-700">{formatDate(selectedDay.date)}</h4>
 
         {selectedDay.items.length === 0 ? (
-          <p className="mt-1 text-sm text-slate-500">Día libre, sin nada programado.</p>
+          <p className="mt-1 text-sm text-ink-700">Día libre, sin nada programado.</p>
         ) : (
-          <ul className="mt-1 divide-y divide-slate-100">
+          <ul className="mt-1 divide-y divide-ink-200">
             {selectedDay.items.map((item) => (
               <Item
                 key={item.id}
