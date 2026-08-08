@@ -17,7 +17,9 @@ import type { Plugin } from 'vite';
 // resuelve desde la raíz de Vite.
 const ROUTES: Record<string, string> = {
   '/api/health': '/api/health.ts',
+  '/api/config': '/api/config.ts',
   '/api/trips/generate': '/api/trips/generate.ts',
+  '/api/trips/saved': '/api/trips/saved.ts',
 };
 
 type Handler = (request: Request) => Promise<Response>;

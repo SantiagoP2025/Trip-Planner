@@ -8,6 +8,12 @@ describe('statusForErrorCode', () => {
     const expected: Record<ApiErrorCode, number> = {
       INVALID_REQUEST: 400,
       VALIDATION_ERROR: 400,
+      // Sin fila propia en la tabla: haber alcanzado el máximo de viajes
+      // guardados es una solicitud que no se puede atender tal como viene.
+      SAVED_TRIPS_LIMIT: 400,
+      UNAUTHORIZED: 401,
+      FORBIDDEN: 403,
+      NOT_FOUND: 404,
       METHOD_NOT_ALLOWED: 405,
       RATE_LIMITED: 429,
       PROVIDER_ERROR: 502,

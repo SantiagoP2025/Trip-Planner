@@ -1,3 +1,4 @@
+import { readBearerToken, type SessionVerifier } from '../auth/session.ts';
 import { NoopTripRepository } from '../repositories/noop-trip.repository.ts';
 import { validateTripRequest, type TripRequestInput } from '../schemas/trip.schema.ts';
 import {
@@ -32,6 +33,10 @@ export interface GenerateTripHandlerDependencies {
   // Sin persistencia configurada el endpoint funciona igual y no guarda nada:
   // es el criterio best-effort de la fase 6, también cuando no hay base de datos.
   persistence?: TripPersistence;
+  // Fase 8. La sesión es *opcional* en este endpoint: generar un viaje no exige
+  // cuenta y no va a exigirla. Sirve para poner nombre al dueño de la solicitud,
+  // que es lo que después permite guardarla.
+  sessionVerifier?: SessionVerifier;
   now?: () => Date;
   newRequestId?: () => string;
 }
@@ -128,6 +133,23 @@ export function createGenerateTripHandler(
 
     const tripRequest = toTripRequest(validation.data);
 
+    // Fase 8: si la petición trae sesión, la solicitud queda a nombre de su
+    // dueño y podrá guardarse después. Sin sesión sigue generándose igual, a
+    // nombre de nadie: pedir cuenta para ver tres propuestas sería cambiar el
+    // producto, no protegerlo.
+    //
+    // Que no se pueda comprobar la sesión tampoco puede impedir la generación.
+    // Se registra y se sigue: la fila queda anónima, como cualquier otra visita.
+    let userId: string | null = null;
+    if (dependencies.sessionVerifier) {
+      const session = await dependencies.sessionVerifier.verify(readBearerToken(request));
+      if (session.status === 'authenticated') {
+        userId = session.user.id;
+      } else if (session.status === 'unavailable') {
+        logError(requestId, 'auth.verifier_unavailable', session.error);
+      }
+    }
+
     // La fila de la solicitud se crea a la vez que se genera el viaje, no antes:
     // no depende del resultado, así que su ida y vuelta a la base de datos se
     // esconde detrás del trabajo del motor en vez de sumarse a él.
@@ -136,10 +158,7 @@ export function createGenerateTripHandler(
     // puede convertirse en un rechazo sin atender.
     const pendingTripId = persistence.begin(requestId, {
       request: tripRequest,
-      // Todavía no hay usuario autenticado: las cuentas llegan en la fase 8.
-      // Hasta entonces la fila queda a nombre de nadie y, por RLS, invisible
-      // para cualquiera que no sea el propio servidor.
-      userId: null,
+      userId,
     });
 
     try {

@@ -3,6 +3,7 @@ import type {
   TripGenerationOutcome,
   TripRepository,
 } from '../repositories/trip.repository.ts';
+import { withinTimeout } from './with-timeout.ts';
 
 // Criterio de la fase 6: la persistencia es best-effort. Si la base de datos
 // falla, el viaje se genera igual.
@@ -35,24 +36,8 @@ export interface BestEffortTripPersistenceOptions {
 // ver su viaje.
 export const DEFAULT_PERSISTENCE_TIMEOUT_MS = 3_000;
 
-async function withinTimeout<T>(work: Promise<T>, timeoutMs: number): Promise<T> {
-  let timer: ReturnType<typeof setTimeout> | undefined;
-
-  try {
-    return await Promise.race([
-      work,
-      new Promise<never>((_, reject) => {
-        timer = setTimeout(
-          () => reject(new Error(`La base de datos no respondió en ${timeoutMs} ms.`)),
-          timeoutMs,
-        );
-      }),
-    ]);
-  } finally {
-    // `Promise.race` ya ha enganchado un manejador a `work`, así que si tarda y
-    // acaba fallando no queda una promesa rechazada sin atender.
-    clearTimeout(timer);
-  }
+function withinDatabaseTimeout<T>(work: Promise<T>, timeoutMs: number): Promise<T> {
+  return withinTimeout(work, timeoutMs, `La base de datos no respondió en ${timeoutMs} ms.`);
 }
 
 export class BestEffortTripPersistence implements TripPersistence {
@@ -68,7 +53,7 @@ export class BestEffortTripPersistence implements TripPersistence {
 
   async begin(requestId: string, record: NewTripRequest): Promise<string | null> {
     try {
-      return await withinTimeout(this.repository.createTripRequest(record), this.timeoutMs);
+      return await withinDatabaseTimeout(this.repository.createTripRequest(record), this.timeoutMs);
     } catch (error) {
       this.onError(requestId, 'trip.persistence_begin_failed', error);
       return null;
@@ -85,7 +70,7 @@ export class BestEffortTripPersistence implements TripPersistence {
     if (tripRequestId === null) return;
 
     try {
-      await withinTimeout(
+      await withinDatabaseTimeout(
         this.repository.saveGenerationOutcome(tripRequestId, outcome),
         this.timeoutMs,
       );

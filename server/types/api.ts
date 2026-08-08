@@ -1,3 +1,4 @@
+import type { SavedTrip } from './saved-trip.ts';
 import type { TripProposal, ValidationError } from './trip.ts';
 
 // Sección 16.1: códigos que devuelve la API. Cada uno se traduce a un estado
@@ -5,6 +6,10 @@ import type { TripProposal, ValidationError } from './trip.ts';
 export type ApiErrorCode =
   | 'INVALID_REQUEST'
   | 'VALIDATION_ERROR'
+  | 'UNAUTHORIZED'
+  | 'FORBIDDEN'
+  | 'NOT_FOUND'
+  | 'SAVED_TRIPS_LIMIT'
   | 'METHOD_NOT_ALLOWED'
   | 'RATE_LIMITED'
   | 'PROVIDER_ERROR'
@@ -43,4 +48,36 @@ export interface HealthResponseBody {
   status: 'ok';
   service: string;
   timestamp: string;
+}
+
+// Fase 8. Respuestas de /api/trips/saved. Las tres llevan `requestId` por la
+// misma razón que la de generación (sección 16.3): es el hilo que une lo que ve
+// el usuario con lo que quedó registrado.
+export interface SavedTripsResponseBody {
+  requestId: string;
+  savedTrips: SavedTrip[];
+}
+
+export interface SaveTripResponseBody {
+  requestId: string;
+  savedTrip: SavedTrip;
+}
+
+export interface DeleteSavedTripResponseBody {
+  requestId: string;
+  deletedId: string;
+}
+
+// Fase 8. Configuración de ejecución que el navegador necesita para hablar con
+// Supabase: la URL del proyecto y la clave anónima, que es pública y está
+// protegida por las políticas Row Level Security de las migraciones.
+//
+// Aquí no aparece ni puede aparecer ninguna clave de servidor. Lo que decide qué
+// sale por este endpoint es esta forma, y no un objeto de configuración
+// completo del que alguien recorte campos más adelante.
+export interface RuntimeConfigResponseBody {
+  // `null` cuando no hay Supabase configurado: la aplicación genera viajes igual
+  // y el frontend dice que las cuentas no están disponibles, en vez de enseñar
+  // un formulario de acceso que no puede funcionar.
+  supabase: { url: string; anonKey: string } | null;
 }

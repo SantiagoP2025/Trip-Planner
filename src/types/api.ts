@@ -33,8 +33,14 @@ export type { AccommodationOffer } from '../../server/types/accommodation.ts';
 
 export type { ItineraryDay } from '../../server/types/itinerary.ts';
 
+export type { SavedTrip } from '../../server/types/saved-trip.ts';
+
 export type {
   ApiErrorBody,
   ApiErrorCode,
+  DeleteSavedTripResponseBody,
   GenerateTripResponseBody,
+  RuntimeConfigResponseBody,
+  SavedTripsResponseBody,
+  SaveTripResponseBody,
 } from '../../server/types/api.ts';

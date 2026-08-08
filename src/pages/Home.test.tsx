@@ -3,6 +3,7 @@ import { cleanup, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it } from 'vitest';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
+import { AuthProvider } from '../auth/AuthProvider.tsx';
 import Home from './Home.tsx';
 
 afterEach(cleanup);
@@ -14,14 +15,19 @@ function LocationSpy() {
   return <div data-testid="destino">{`${location.pathname}${location.search}`}</div>;
 }
 
+// La barra de sesión de la cabecera necesita el contexto de autenticación. Sin
+// cuentas configuradas, que es lo que hace este doble, no pinta nada: lo que se
+// prueba aquí es el formulario.
 function renderHome() {
   return render(
-    <MemoryRouter initialEntries={['/']}>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/results" element={<LocationSpy />} />
-      </Routes>
-    </MemoryRouter>,
+    <AuthProvider createGateway={async () => null}>
+      <MemoryRouter initialEntries={['/']}>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/results" element={<LocationSpy />} />
+        </Routes>
+      </MemoryRouter>
+    </AuthProvider>,
   );
 }
 

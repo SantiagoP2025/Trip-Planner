@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { SessionResult, SessionVerifier } from '../auth/session.ts';
 import { MAX_REQUEST_BODY_BYTES } from '../config/limits.ts';
 import { MockAccommodationProvider } from '../providers/mock-accommodation.provider.ts';
 import { MockFlightProvider } from '../providers/mock-flight.provider.ts';
@@ -56,12 +57,14 @@ function buildHandler(
     providers?: TripPlannerProviders;
     rateLimiter?: RateLimiter;
     persistence?: TripPersistence;
+    sessionVerifier?: SessionVerifier;
   } = {},
 ) {
   return createGenerateTripHandler({
     providers: overrides.providers ?? mockProviders(),
     rateLimiter: overrides.rateLimiter ?? permissiveLimiter(),
     ...(overrides.persistence ? { persistence: overrides.persistence } : {}),
+    ...(overrides.sessionVerifier ? { sessionVerifier: overrides.sessionVerifier } : {}),
   });
 }
 
@@ -419,8 +422,8 @@ describe('POST /api/trips/generate — persistencia', () => {
     expect(repository.created[0]?.request.destination).toBe('Lisboa');
   });
 
-  // Las cuentas llegan en la fase 8; hasta entonces la fila no es de nadie.
-  it('guarda la solicitud sin usuario mientras no haya cuentas', async () => {
+  // Sin sesión la fila no es de nadie: generar un viaje no exige cuenta.
+  it('guarda la solicitud sin usuario cuando la petición es anónima', async () => {
     const repository = new RecordingRepository();
     await buildHandler({ persistence: withRepository(repository) })(postRequest(validBody()));
 
@@ -534,5 +537,64 @@ describe('POST /api/trips/generate — persistencia', () => {
     await handler(postRequest(validBody()));
 
     expect(repository.created).toHaveLength(1);
+  });
+
+  // Fase 8. La sesión es opcional en este endpoint: sirve para poner nombre al
+  // dueño de la solicitud, que es lo que después permite guardarla.
+  describe('con cuentas de usuario', () => {
+    function verifierReturning(result: SessionResult): SessionVerifier {
+      return { verify: async () => result };
+    }
+
+    it('guarda la solicitud a nombre del usuario que ha iniciado sesión', async () => {
+      const repository = new RecordingRepository();
+      await buildHandler({
+        persistence: withRepository(repository),
+        sessionVerifier: verifierReturning({
+          status: 'authenticated',
+          user: { id: 'usuario-1', email: 'alguien@ejemplo.test' },
+        }),
+      })(postRequest(validBody(), { headers: { authorization: 'Bearer token' } }));
+
+      expect(repository.created[0]?.userId).toBe('usuario-1');
+    });
+
+    // Pedir cuenta para ver tres propuestas sería cambiar el producto, no
+    // protegerlo: sin sesión el viaje se genera igual.
+    it('genera el viaje igual sin sesión', async () => {
+      const repository = new RecordingRepository();
+      const response = await buildHandler({
+        persistence: withRepository(repository),
+        sessionVerifier: verifierReturning({ status: 'anonymous' }),
+      })(postRequest(validBody()));
+
+      expect(response.status).toBe(200);
+      expect(repository.created[0]?.userId).toBeNull();
+    });
+
+    // Y tampoco puede romperlo que Supabase esté caído: se registra y se sigue.
+    it('genera el viaje igual cuando no se puede comprobar la sesión', async () => {
+      const repository = new RecordingRepository();
+      const response = await buildHandler({
+        persistence: withRepository(repository),
+        sessionVerifier: verifierReturning({
+          status: 'unavailable',
+          error: new Error('el servicio de autenticación no responde'),
+        }),
+      })(postRequest(validBody(), { headers: { authorization: 'Bearer token' } }));
+      const body = (await response.json()) as GenerateTripResponseBody;
+
+      expect(response.status).toBe(200);
+      expect(body.proposals).toHaveLength(3);
+      expect(repository.created[0]?.userId).toBeNull();
+    });
+
+    it('no comprueba la sesión de una petición que ni siquiera es válida', async () => {
+      const verify = vi.fn(async (): Promise<SessionResult> => ({ status: 'anonymous' }));
+
+      await buildHandler({ sessionVerifier: { verify } })(postRequest(validBody({ budget: 0 })));
+
+      expect(verify).not.toHaveBeenCalled();
+    });
   });
 });

@@ -1,8 +1,11 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { AuthProvider } from '../auth/AuthProvider.tsx';
+import type { AuthGateway } from '../auth/auth-gateway.ts';
+import { createFakeAuthGateway, TEST_SESSION } from '../auth/test-fixtures.ts';
 import type { GenerateTripResponseBody, TripProposal, TripRequest } from '../types/api.ts';
 import { toSearchParams } from '../services/trip-search-params.ts';
 import Results from './Results.tsx';
@@ -108,14 +111,22 @@ function buildResponse(proposals: TripProposal[]): GenerateTripResponseBody {
   };
 }
 
-function renderResults(params: URLSearchParams = toSearchParams(REQUEST)) {
+// Sin cuentas configuradas por defecto: lo que se prueba aquí es la pantalla de
+// resultados, y sin sesión se comporta como se comportaba antes de la fase 8.
+// Los tests que necesitan sesión pasan su propia puerta de autenticación.
+function renderResults(
+  params: URLSearchParams = toSearchParams(REQUEST),
+  createGateway: () => Promise<AuthGateway | null> = async () => null,
+) {
   return render(
-    <MemoryRouter initialEntries={[`/results?${params.toString()}`]}>
-      <Routes>
-        <Route path="/results" element={<Results />} />
-        <Route path="/" element={<p>Formulario</p>} />
-      </Routes>
-    </MemoryRouter>,
+    <AuthProvider createGateway={createGateway}>
+      <MemoryRouter initialEntries={[`/results?${params.toString()}`]}>
+        <Routes>
+          <Route path="/results" element={<Results />} />
+          <Route path="/" element={<p>Formulario</p>} />
+        </Routes>
+      </MemoryRouter>
+    </AuthProvider>,
   );
 }
 
@@ -239,5 +250,137 @@ describe('Pantalla de resultados', () => {
     renderResults();
 
     expect(screen.getByRole('link', { name: /Cambiar la búsqueda/ })).toBeTruthy();
+  });
+});
+
+// Fase 8: guardar el viaje desde los resultados.
+describe('Pantalla de resultados — guardar el viaje', () => {
+  function withSession() {
+    const fake = createFakeAuthGateway({ session: TEST_SESSION });
+    return { fake, createGateway: async () => fake.gateway };
+  }
+
+  it('manda el token de la sesión al generar, para que el viaje tenga dueño', async () => {
+    const fetchMock = vi.fn(
+      async () => new Response(JSON.stringify(buildResponse([buildProposal()]))),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+
+    renderResults(toSearchParams(REQUEST), withSession().createGateway);
+    await screen.findByText('Hotel Alfama');
+
+    const [, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
+    expect((init.headers as Record<string, string>).authorization).toBe(
+      `Bearer ${TEST_SESSION.accessToken}`,
+    );
+  });
+
+  it('guarda la propuesta mandando solo los identificadores', async () => {
+    const fetchMock = vi.fn(async (url: string) => {
+      if (url.startsWith('/api/trips/saved')) {
+        return new Response(
+          JSON.stringify({
+            requestId: 'req-1',
+            savedTrip: { id: 'guardado-1', title: 'Valencia → Lisboa' },
+          }),
+          { status: 201 },
+        );
+      }
+      return new Response(
+        JSON.stringify({ ...buildResponse([buildProposal()]), tripId: 'solicitud-1' }),
+      );
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    renderResults(toSearchParams(REQUEST), withSession().createGateway);
+
+    await userEvent.setup().click(await screen.findByRole('button', { name: 'Guardar viaje' }));
+
+    expect(await screen.findByText(/Guardado como/)).toBeTruthy();
+
+    const saveCall = (fetchMock.mock.calls as unknown as [string, RequestInit][]).find(([url]) =>
+      url.startsWith('/api/trips/saved'),
+    );
+    const init = saveCall?.[1] as RequestInit;
+    // Sección 8.2: "No confiar en cálculos enviados por el frontend".
+    expect(JSON.parse(init.body as string)).toEqual({
+      tripId: 'solicitud-1',
+      proposalType: 'recommended',
+    });
+  });
+
+  // Regla 15: la tercera es la que faltaba siempre.
+  it('enseña el error cuando guardar falla', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: string) => {
+        if (url.startsWith('/api/trips/saved')) {
+          return new Response(
+            JSON.stringify({
+              error: { code: 'INTERNAL_ERROR', message: 'No hemos podido guardarlo.', requestId: 'r' },
+            }),
+            { status: 500, headers: { 'content-type': 'application/json' } },
+          );
+        }
+        return new Response(
+          JSON.stringify({ ...buildResponse([buildProposal()]), tripId: 'solicitud-1' }),
+        );
+      }),
+    );
+
+    renderResults(toSearchParams(REQUEST), withSession().createGateway);
+
+    await userEvent.setup().click(await screen.findByRole('button', { name: 'Guardar viaje' }));
+
+    expect(await screen.findByText('No hemos podido guardarlo.')).toBeTruthy();
+  });
+
+  // Sin fila en la base de datos no hay nada a lo que apuntar: se dice, en vez
+  // de enseñar un botón que solo puede fallar.
+  it('no ofrece guardar cuando la generación no llegó a registrarse', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response(JSON.stringify(buildResponse([buildProposal()])))),
+    );
+
+    renderResults(toSearchParams(REQUEST), withSession().createGateway);
+    await screen.findByText('Hotel Alfama');
+
+    expect(screen.queryByRole('button', { name: 'Guardar viaje' })).toBeNull();
+    expect(screen.getByText(/no se ha podido registrar/)).toBeTruthy();
+  });
+
+  it('invita a entrar en la cuenta cuando no hay sesión', async () => {
+    const fake = createFakeAuthGateway({ session: null });
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () =>
+        new Response(JSON.stringify({ ...buildResponse([buildProposal()]), tripId: 'solicitud-1' })),
+      ),
+    );
+
+    renderResults(toSearchParams(REQUEST), async () => fake.gateway);
+    await screen.findByText('Hotel Alfama');
+
+    expect(screen.getByRole('link', { name: 'Entra en tu cuenta' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Guardar viaje' })).toBeNull();
+  });
+
+  // Un viaje generado en anónimo no es de nadie, así que al entrar hay que
+  // volver a pedirlo: si no, guardarlo daría un 403.
+  it('vuelve a pedir el viaje cuando el usuario inicia sesión desde esta pantalla', async () => {
+    const fake = createFakeAuthGateway({ session: null });
+    const fetchMock = vi.fn(async () =>
+      new Response(JSON.stringify({ ...buildResponse([buildProposal()]), tripId: 'solicitud-1' })),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+
+    renderResults(toSearchParams(REQUEST), async () => fake.gateway);
+    await screen.findByText('Hotel Alfama');
+
+    const before = fetchMock.mock.calls.length;
+    await act(async () => fake.emit(TEST_SESSION));
+
+    await waitFor(() => expect(fetchMock.mock.calls.length).toBeGreaterThan(before));
   });
 });

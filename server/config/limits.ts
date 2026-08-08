@@ -30,6 +30,23 @@ export const HEALTH_RATE_LIMIT: RateLimitPolicy = {
   maxRequests: 60,
 };
 
+// Fase 8. Los viajes guardados no consultan proveedores, pero cada petición
+// comprueba la sesión contra Supabase y toca la base de datos, así que tampoco
+// pueden quedar sin tope (sección 8.2). Es más holgado que el de generación
+// porque abrir la lista y borrar un par de viajes son varias peticiones seguidas
+// perfectamente normales.
+export const SAVED_TRIPS_RATE_LIMIT: RateLimitPolicy = {
+  windowMs: 60_000,
+  maxRequests: 40,
+};
+
+// La configuración pública la pide el navegador una vez por carga de página.
+// Sigue siendo un endpoint público, así que lleva su tope como los demás.
+export const CONFIG_RATE_LIMIT: RateLimitPolicy = {
+  windowMs: 60_000,
+  maxRequests: 60,
+};
+
 // El limitador guarda un contador por IP en memoria. Sin tope de claves, una
 // avalancha desde direcciones distintas convierte el propio limitador en la
 // fuga de memoria que debía evitar.

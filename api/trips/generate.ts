@@ -1,3 +1,4 @@
+import { createSessionVerifier } from '../../server/auth/create-session-verifier.ts';
 import { GENERATE_RATE_LIMIT, RATE_LIMIT_MAX_TRACKED_KEYS } from '../../server/config/limits.ts';
 import { createGenerateTripHandler } from '../../server/http/handle-generate-trip.ts';
 import { logError } from '../../server/http/logger.ts';
@@ -24,6 +25,10 @@ const rateLimiter = new FixedWindowRateLimiter({
 
 const selection = createTripRepository();
 
+// Fase 8: la sesión es opcional aquí. Si viene, la solicitud queda a nombre de
+// su dueño y podrá guardarse; si no viene, el viaje se genera igual.
+const verifierSelection = createSessionVerifier();
+
 // Una aplicación que no guarda nada tiene que decirlo al arrancar. Sin esto, la
 // primera pista de que Supabase está mal configurado llegaría el día que
 // alguien eche de menos sus viajes.
@@ -47,4 +52,5 @@ export default createGenerateTripHandler({
   },
   rateLimiter,
   persistence: new BestEffortTripPersistence(selection.repository, { onError: logError }),
+  sessionVerifier: verifierSelection.verifier,
 });

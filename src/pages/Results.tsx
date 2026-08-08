@@ -1,6 +1,9 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
+import { useAuth } from '../auth/AuthProvider.tsx';
 import { ProposalCard } from '../components/ProposalCard.tsx';
+import { SaveTripButton } from '../components/SaveTripButton.tsx';
+import { SessionBar } from '../components/SessionBar.tsx';
 import { generateTrip, TripApiError } from '../services/trip-api.client.ts';
 import { fromSearchParams } from '../services/trip-search-params.ts';
 import { validateTripForm } from '../services/trip-validation.ts';
@@ -19,6 +22,7 @@ type Status = 'loading' | 'success' | 'error';
 function Layout({ children }: { children: React.ReactNode }) {
   return (
     <main className="mx-auto max-w-4xl px-4 py-10">
+      <SessionBar />
       <Link to="/" className="text-sm text-sky-700 underline hover:text-sky-900">
         ← Cambiar la búsqueda
       </Link>
@@ -29,6 +33,7 @@ function Layout({ children }: { children: React.ReactNode }) {
 
 function Results() {
   const [searchParams] = useSearchParams();
+  const { status: authStatus, user, accessToken } = useAuth();
   // Regla 13: la dependencia del efecto es una cadena, no el objeto de
   // parámetros. Un objeto reconstruido en cada render cambia de identidad en
   // cada render, y el efecto que lo vigila se dispararía siempre.
@@ -46,15 +51,36 @@ function Results() {
 
   const retry = useCallback(() => setAttempt((value) => value + 1), []);
 
+  // Supabase renueva el token de acceso cada pocos minutos. Si el token fuera
+  // dependencia del efecto de abajo, cada renovación volvería a generar el
+  // viaje entero: con proveedores reales, eso es dinero por una respuesta que ya
+  // estaba en pantalla. Lo que sí tiene que repetir la búsqueda es cambiar de
+  // usuario, y eso se mira aparte.
+  //
+  // La referencia se actualiza en un efecto declarado antes que el de la
+  // generación, así que cuando aquel se ejecuta ya tiene el token vigente.
+  const accessTokenRef = useRef(accessToken);
+  useEffect(() => {
+    accessTokenRef.current = accessToken;
+  }, [accessToken]);
+
+  const userId = user?.id ?? null;
+
   useEffect(() => {
     if (!validation.valid) return;
+    // Mientras no se sepa si hay sesión no se pide nada: una generación lanzada
+    // medio segundo antes quedaría a nombre de nadie y no podría guardarse.
+    if (authStatus === 'loading') return;
 
     // Si el usuario cambia de búsqueda antes de que llegue la anterior, la
     // primera se cancela: sin esto, la respuesta lenta pisaría a la rápida.
     const controller = new AbortController();
     setStatus('loading');
 
-    generateTrip(validation.request, { signal: controller.signal })
+    generateTrip(validation.request, {
+      signal: controller.signal,
+      accessToken: accessTokenRef.current,
+    })
       .then((response) => {
         setData(response);
         setStatus('success');
@@ -72,7 +98,11 @@ function Results() {
       });
 
     return () => controller.abort();
-  }, [validation, attempt]);
+    // `userId` es dependencia a propósito: al entrar en la cuenta desde esta
+    // misma pantalla, la búsqueda se repite para que la solicitud quede a nombre
+    // del usuario y pueda guardarse. Sin esto, el botón de guardar daría un 403
+    // sobre un viaje generado en anónimo.
+  }, [validation, attempt, authStatus, userId]);
 
   // Una URL manipulada o incompleta no es un fallo del servidor: se dice y se
   // ofrece la vuelta al formulario, en vez de lanzar una petición condenada.
@@ -150,7 +180,13 @@ function Results() {
           ) : (
             <div className="flex flex-col gap-6">
               {data.proposals.map((proposal) => (
-                <ProposalCard key={proposal.id} proposal={proposal} />
+                <div key={proposal.id} className="flex flex-col gap-3">
+                  <ProposalCard proposal={proposal} />
+                  {/* Fase 8: guardar necesita que la solicitud esté en la base
+                      de datos. `tripId` falta cuando la persistencia falló, y
+                      entonces el botón lo dice en vez de fallar al pulsarlo. */}
+                  <SaveTripButton tripId={data.tripId} proposalType={proposal.type} />
+                </div>
               ))}
             </div>
           )}

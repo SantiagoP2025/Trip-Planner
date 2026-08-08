@@ -12,6 +12,7 @@ import {
   MIN_TEXT_LENGTH,
 } from '../../server/config/trip-limits.ts';
 import { FormField } from '../components/FormField.tsx';
+import { SessionBar } from '../components/SessionBar.tsx';
 import { toSearchParams } from '../services/trip-search-params.ts';
 import { validateTripForm, type FieldErrors } from '../services/trip-validation.ts';
 import type { TravelPreference } from '../types/api.ts';
@@ -156,6 +157,7 @@ function Home() {
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-10">
+      <SessionBar />
       <header className="mb-8">
         <h1 className="text-3xl font-semibold text-slate-900">Planificador de viajes</h1>
         <p className="mt-2 text-slate-600">

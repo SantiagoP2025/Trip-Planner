@@ -20,3 +20,14 @@ export const MAX_BUDGET = 100_000;
 export const MAX_DIETARY_RESTRICTIONS = 20;
 export const MAX_WALKING_MINUTES_CAP = 240;
 export const MAX_PREFERENCE_LEVEL = 3;
+
+// Fase 8: el título de un viaje guardado es texto libre del usuario, así que
+// lleva tope como cualquier otra entrada. El mismo número está repetido en la
+// restricción `saved_trips_title_length` de la migración 0002.
+export const MIN_SAVED_TRIP_TITLE_LENGTH = 1;
+export const MAX_SAVED_TRIP_TITLE_LENGTH = 120;
+
+// Tope de viajes guardados por usuario. No lo pide la especificación: lo pide la
+// regla 5, que no admite entradas sin límite. Sin tope, una cuenta puede crecer
+// sin fin y la consulta de la lista deja de estar acotada.
+export const MAX_SAVED_TRIPS_PER_USER = 100;
