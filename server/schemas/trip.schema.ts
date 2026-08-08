@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import type { PreferenceLevel } from '../types/common.ts';
 import type { ValidationError } from '../types/trip.ts';
 
 const MIN_TEXT_LENGTH = 2;
@@ -25,7 +26,15 @@ function freeTextSchema(fieldLabel: string) {
     .max(MAX_TEXT_LENGTH, `${fieldLabel} no puede superar los ${MAX_TEXT_LENGTH} caracteres.`);
 }
 
-const preferenceLevelSchema = z.number().int().min(0, 'La preferencia debe estar entre 0 y 3.').max(3, 'La preferencia debe estar entre 0 y 3.');
+// El `transform` no valida nada nuevo: el rango ya está comprobado arriba. Solo
+// estrecha el tipo de salida a PreferenceLevel para que lo que sale del esquema
+// encaje con PreferenceProfile sin necesidad de conversiones en la frontera HTTP.
+const preferenceLevelSchema = z
+  .number()
+  .int()
+  .min(0, 'La preferencia debe estar entre 0 y 3.')
+  .max(3, 'La preferencia debe estar entre 0 y 3.')
+  .transform((value) => value as PreferenceLevel);
 
 const preferencesSchema = z.object({
   beach: preferenceLevelSchema,
