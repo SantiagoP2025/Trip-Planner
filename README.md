@@ -4,7 +4,7 @@ Planificador de viajes: el usuario introduce origen, destino, fechas, viajeros, 
 
 Las propuestas se generan siempre en el servidor. El frontend solo pide, recibe y pinta resultados; nunca genera datos por su cuenta. En esta primera versión todos los proveedores de datos (vuelos, alojamiento, lugares, rutas) son simulados, detrás de interfaces que permitirán sustituirlos por proveedores reales sin tocar el motor.
 
-La especificación funcional completa está en [`docs/especificacion.docx`](docs/especificacion.docx). El plan de fases está en [`PLAN.md`](PLAN.md) y las reglas de desarrollo en [`CLAUDE.md`](CLAUDE.md).
+La especificación funcional completa está en [`docs/especificacion.docx`](docs/especificacion.docx). El plan de fases está en [`PLAN-2.md`](PLAN-2.md) —[`PLAN.md`](PLAN.md) sigue valiendo como referencia de las fases 0 a 3— y las reglas de desarrollo en [`CLAUDE.md`](CLAUDE.md).
 
 ## Cómo se arranca
 
@@ -74,6 +74,24 @@ Candidatos, por orden de preferencia:
 **Coste por usuario.** Con los tres primeros, salvo Protomaps, el coste es *por carga de mapa*, no por usuario registrado: un usuario que abre tres propuestas y cambia de día cinco veces puede generar decenas de cargas. Ese multiplicador es lo que hay que medir antes de elegir, y por eso Protomaps encabeza la lista.
 
 Las cifras concretas de cada plan cambian a menudo: **hay que confirmarlas en el momento de contratar**, no darlas por buenas desde aquí. Lo que no cambia es la forma del coste, que es lo que entra en el modelo de precios.
+
+## Exportar a PDF
+
+Cada propuesta se puede descargar en PDF, desde la pantalla de resultados y desde la de viajes guardados. El documento lleva el resumen del viaje, el vuelo, el alojamiento, el desglose del gasto y el itinerario día a día con el esquema de las paradas de cada día. Si el viaje está guardado, lleva además las ediciones del usuario, marcadas como suyas.
+
+**La librería de PDF no está en el bundle principal.** Entra por `import()` dinámico dentro de `services/pdf/render-trip-pdf.ts`, y el navegador solo la descarga cuando alguien pulsa el botón. Son unos 600 kB que, con una importación normal, pagaría cada visita a la portada para no usarlos casi nunca. `services/pdf/dynamic-import.test.ts` comprueba en cada `npm test` que sigue siendo así, porque es un requisito fácil de romper sin que se note nada.
+
+El módulo está partido en tres, y la partición es lo que lo hace probable:
+
+| Fichero | Qué hace |
+| --- | --- |
+| `trip-document.ts` | Convierte la propuesta en una lista de bloques. No sabe nada de PDF, así que el contenido del documento se prueba entero sin abrir uno. |
+| `render-trip-pdf.ts` | Dibuja esos bloques. Es el único fichero que toca la librería. |
+| `download-blob.ts` | Dispara la descarga en el navegador. |
+
+**Sin fotos, y no es un descuido.** No hay proveedor de imágenes: la versión anterior traía fotos de portada con la clave del proveedor metida en el bundle público, que es justo lo que prohíbe la regla 4. Lo único que se dibuja es el esquema del mapa, que es vectorial. El día que haya fotos, se recomprimen antes de incrustarlas y el PDF sale sin foto si la recompresión falla; el sitio para eso es `render-trip-pdf.ts`.
+
+**Texto.** El PDF usa las fuentes estándar, que no van dentro del fichero y codifican en WinAnsi. Cubre el español entero —acentos, eñes, aperturas, el euro— pero no una flecha ni un emoji, y `drawText` lanza con lo que no cubre. Por eso todo el texto pasa por `sanitizePdfText()`: lo que no cabe se marca, no se borra en silencio. La alternativa sería incrustar una fuente Unicode completa, que son varios cientos de kilobytes más por descarga.
 
 ## Despliegue
 

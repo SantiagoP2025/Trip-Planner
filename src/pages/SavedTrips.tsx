@@ -303,7 +303,19 @@ function SavedTrips() {
                 </button>
               </header>
 
-              <ProposalCard proposal={trip.proposal} editing={editingFor(trip)} />
+              {/* Fase 12: el PDF de un viaje guardado lleva el título que le
+                  puso el usuario y sus ediciones, que llegan por `editing`. */}
+              <ProposalCard
+                proposal={trip.proposal}
+                trip={{
+                  origin: trip.origin,
+                  destination: trip.destination,
+                  departureDate: trip.departureDate,
+                  returnDate: trip.returnDate,
+                  title: trip.title,
+                }}
+                editing={editingFor(trip)}
+              />
             </section>
           ))}
         </div>

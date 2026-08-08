@@ -1,6 +1,8 @@
 import { useId, useMemo, useState, type FormEvent } from 'react';
-import { DayMap, hasCoordinates } from './DayMap.tsx';
+import { DayMap } from './DayMap.tsx';
 import { formatCurrency, formatDate, formatDuration, formatTime } from '../services/format.ts';
+import { hasCoordinates } from '../services/map-projection.ts';
+import { ITINERARY_TYPE_LABELS } from '../services/labels.ts';
 import {
   MAX_EDIT_DESCRIPTION_LENGTH,
   MAX_EDIT_TITLE_LENGTH,
@@ -16,16 +18,6 @@ import type { ItineraryDay, ItineraryEdit, ItineraryItem, ItineraryItemType } fr
 // El mapa llega en la fase 10 y depende de esto: las coordenadas que trae cada
 // parada vienen del proveedor de lugares, así que ya se pueden dibujar sin
 // enseñarle a nadie un sitio que no ha buscado (regla 12 del plan).
-
-const TYPE_LABELS: Record<ItineraryItemType, string> = {
-  arrival: 'Llegada',
-  transfer: 'Traslado',
-  hotel: 'Alojamiento',
-  meal: 'Comida',
-  visit: 'Visita',
-  walk: 'Paseo',
-  free_time: 'Tiempo libre',
-};
 
 const TYPE_STYLES: Record<ItineraryItemType, string> = {
   arrival: 'bg-sky-100 text-sky-800',
@@ -200,7 +192,7 @@ function Item({
           <span
             className={`rounded-full px-2 py-0.5 text-xs font-medium ${TYPE_STYLES[item.type]}`}
           >
-            {TYPE_LABELS[item.type]}
+            {ITINERARY_TYPE_LABELS[item.type]}
           </span>
           <p className={`font-medium text-slate-900 ${isEdited ? 'italic' : ''}`}>{title}</p>
           {/* Se distingue visualmente lo editado de lo original. No basta con la

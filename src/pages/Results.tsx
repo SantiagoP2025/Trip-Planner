@@ -181,7 +181,18 @@ function Results() {
             <div className="flex flex-col gap-6">
               {data.proposals.map((proposal) => (
                 <div key={proposal.id} className="flex flex-col gap-3">
-                  <ProposalCard proposal={proposal} />
+                  {/* Fase 12: de qué viaje es la propuesta. La propuesta no lo
+                      dice, y el PDF necesita titularse de alguna manera. */}
+                  <ProposalCard
+                    proposal={proposal}
+                    trip={{
+                      origin: request.origin,
+                      destination: request.destination,
+                      departureDate: request.departureDate,
+                      returnDate: request.returnDate,
+                      travelers: request.travelers,
+                    }}
+                  />
                   {/* Fase 8: guardar necesita que la solicitud esté en la base
                       de datos. `tripId` falta cuando la persistencia falló, y
                       entonces el botón lo dice en vez de fallar al pulsarlo. */}

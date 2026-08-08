@@ -34,8 +34,16 @@ const IMPORT_PATTERN =
 
 // Los tests sí pueden construir propuestas de ejemplo: para eso están. Lo que no
 // puede es hacerlo el código que se envía al navegador.
+//
+// Los `test-fixtures.ts` cuentan como material de pruebas: son propuestas de
+// ejemplo que comparten varios tests para no copiarlas en cada uno. Que no se
+// revisen aquí no los deja sueltos: el último test del fichero comprueba que no
+// los importa nadie de producción, que es la parte que de verdad importa.
+const isTestFile = (path: string) =>
+  /\.test\.tsx?$/.test(path) || /(?:^|\/)test-fixtures\.ts$/.test(path);
+
 const PRODUCTION_FILES = Object.entries(SOURCES)
-  .filter(([path]) => !/\.test\.tsx?$/.test(path))
+  .filter(([path]) => !isTestFile(path))
   .map(([path, content]) => ({ path: path.replace(/^\.\//, ''), content }));
 
 function isTypeOnly(clause: string): boolean {
@@ -119,5 +127,18 @@ describe('el frontend no genera datos de viaje', () => {
     ).map(({ file }) => file);
 
     expect(others).toEqual([]);
+  });
+
+  // Las propuestas de ejemplo son la única cosa de `src/` que construye vuelos,
+  // alojamientos y precios, y existen para que los tests tengan qué pintar. El
+  // día que una acabe importada desde un componente, la aplicación estaría
+  // enseñando datos inventados con toda la naturalidad del mundo: es la forma
+  // exacta que tenía el fallo que arrastra el proyecto de partida.
+  it('las propuestas de ejemplo no se importan desde código de producción', () => {
+    const offenders = PRODUCTION_FILES.filter(({ content }) =>
+      /from\s+['"][^'"]*test-fixtures(?:\.ts)?['"]/.test(content),
+    ).map(({ path }) => path);
+
+    expect(offenders).toEqual([]);
   });
 });
