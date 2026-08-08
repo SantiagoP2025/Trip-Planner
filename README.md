@@ -93,6 +93,45 @@ El módulo está partido en tres, y la partición es lo que lo hace probable:
 
 **Texto.** El PDF usa las fuentes estándar, que no van dentro del fichero y codifican en WinAnsi. Cubre el español entero —acentos, eñes, aperturas, el euro— pero no una flecha ni un emoji, y `drawText` lanza con lo que no cubre. Por eso todo el texto pasa por `sanitizePdfText()`: lo que no cabe se marca, no se borra en silencio. La alternativa sería incrustar una fuente Unicode completa, que son varios cientos de kilobytes más por descarga.
 
+## Accesibilidad
+
+**El foco visible lo pone una sola regla**, en `src/index.css`, y ningún componente repite utilidades de foco. Antes cada botón llevaba `focus:outline-none focus:ring-2`, con dos problemas: se olvida —el botón número dieciocho se queda sin indicador y no lo nota quien lo escribe, porque navega con el ratón— y `ring` es un `box-shadow`, que el modo de alto contraste de Windows descarta. Un `outline` sobrevive. `src/accessibility.test.ts` comprueba que nadie vuelve a apagarlo.
+
+**Contraste.** Los botones macizos usan `sky-700` y no `sky-600`: con texto blanco encima, `sky-600` se queda en 4,1 y el mínimo para texto normal es 4,5. Lo mismo en las chinchetas del mapa y del PDF, que llevan el número de la parada en blanco.
+
+**Las pestañas de los días llevan el patrón entero**: panel asociado, `aria-controls`, un solo tabulador para entrar en el grupo y flechas, Inicio y Fin para moverse dentro. Antes tenían los roles pero no el comportamiento, y eso es peor que no tenerlos: el rol anuncia "pestaña 2 de 8" y promete unas flechas que no estaban.
+
+**El título de la pestaña cambia con la pantalla** (`useDocumentTitle`). En una aplicación de una sola página no cambia solo, y es la señal que recibe un lector de pantalla al navegar.
+
+## Rendimiento
+
+El bundle principal son ~353 kB (108 kB comprimido) y es casi todo React, React Router y Zod. Las dos librerías pesadas del proyecto no están ahí:
+
+| Fragmento | Tamaño | Cuándo se descarga |
+| --- | --- | --- |
+| `index-*.js` | 353 kB | Siempre. React, Router, Zod y la aplicación. |
+| `supabase-*.js` | 208 kB | Solo si el despliegue tiene cuentas configuradas. |
+| `pdf-*.js` | 425 kB | Solo al pulsar "Descargar en PDF". |
+
+Los nombres de los fragmentos se fijan en `vite.config.ts`. Por defecto salían `dist-*.js` y `es-*.js`, que vienen del fichero de entrada de cada paquete y no dicen nada: con nombre, una regresión de tamaño tiene dueño en cuanto se mira la salida de `npm run build`.
+
+La aplicación no carga ninguna imagen ni ninguna fuente web: los tipos son los del sistema y lo único ilustrado es el esquema del mapa, que es SVG.
+
 ## Despliegue
 
-Desplegado en Vercel. `vercel.json` reescribe cualquier ruta que no empiece por `/api/` a `index.html`, para que React Router funcione al refrescar la página en una ruta como `/results`.
+Desplegado en Vercel. `vercel.json` reescribe cualquier ruta que no empiece por `/api/` a `index.html`, para que React Router funcione al refrescar la página en una ruta como `/results`. `project-config.test.ts` comprueba ese patrón ruta por ruta, porque es un fallo que no rompe nada hasta que alguien refresca —fue el fallo A.5 de la auditoría y estuvo meses en producción— y porque ningún test de componente lo ve.
+
+```bash
+npm run build          # tiene que pasar antes de subir nada
+npx vercel --prod      # o el despliegue automático desde la rama principal
+```
+
+Variables de entorno a definir en el proyecto de Vercel, **separadas por entorno** (Development, Preview y Production, sección 8.2): las de la tabla de arriba. Ninguna con prefijo `VITE_`.
+
+Después de desplegar, tres comprobaciones que no se pueden hacer desde local:
+
+1. `GET /api/health` responde correctamente (criterio de la sección 17.3).
+2. Abrir `/viajes` y **refrescar**: tiene que seguir en `/viajes` y no dar 404.
+3. Pegar la URL en cualquier sitio que genere vista previa y comprobar que salen el título, la descripción y la imagen.
+
+Cuando el dominio esté fijado, añadir `og:url` a `index.html` con la URL absoluta. Se ha dejado fuera a propósito: una `og:url` que no es la del despliegue manda a otro sitio a quien comparte el enlace, y eso es peor que no tenerla.

@@ -14,6 +14,7 @@ import {
 import { FormField } from '../components/FormField.tsx';
 import { SessionBar } from '../components/SessionBar.tsx';
 import { toSearchParams } from '../services/trip-search-params.ts';
+import { useDocumentTitle } from '../services/use-document-title.ts';
 import { validateTripForm, type FieldErrors } from '../services/trip-validation.ts';
 import type { TravelPreference } from '../types/api.ts';
 
@@ -115,9 +116,10 @@ function toCandidate(values: FormValues) {
 
 const inputClass =
   'rounded-md border border-slate-300 bg-white px-3 py-2 text-slate-900 shadow-sm ' +
-  'focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500';
+  'focus:border-sky-500';
 
 function Home() {
+  useDocumentTitle();
   const navigate = useNavigate();
   const formId = useId();
   const [values, setValues] = useState<FormValues>(initialValues);
@@ -350,7 +352,7 @@ function Home() {
               id={fieldId('checkedBaggage')}
               name="checkedBaggage"
               type="checkbox"
-              className="h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-2 focus:ring-sky-500"
+              className="h-4 w-4 rounded border-slate-300 text-sky-600"
               checked={values.checkedBaggageRequired}
               onChange={(event) => update('checkedBaggageRequired', event.target.checked)}
             />
@@ -398,8 +400,8 @@ function Home() {
 
         <button
           type="submit"
-          className="rounded-md bg-sky-600 px-5 py-3 font-medium text-white shadow-sm
-            hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2"
+          className="rounded-md bg-sky-700 px-5 py-3 font-medium text-white shadow-sm
+            hover:bg-sky-800"
         >
           Buscar viajes
         </button>

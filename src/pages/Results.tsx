@@ -6,6 +6,7 @@ import { SaveTripButton } from '../components/SaveTripButton.tsx';
 import { SessionBar } from '../components/SessionBar.tsx';
 import { generateTrip, TripApiError } from '../services/trip-api.client.ts';
 import { fromSearchParams } from '../services/trip-search-params.ts';
+import { useDocumentTitle } from '../services/use-document-title.ts';
 import { validateTripForm } from '../services/trip-validation.ts';
 import type { GenerateTripResponseBody } from '../types/api.ts';
 
@@ -50,6 +51,14 @@ function Results() {
   const [attempt, setAttempt] = useState(0);
 
   const retry = useCallback(() => setAttempt((value) => value + 1), []);
+
+  // El título dice qué viaje se está mirando: es lo que distingue tres pestañas
+  // de resultados abiertas a la vez, y lo que se guarda si alguien la marca.
+  useDocumentTitle(
+    validation.valid
+      ? `${validation.request.origin} → ${validation.request.destination}`
+      : 'Propuestas de viaje',
+  );
 
   // Supabase renueva el token de acceso cada pocos minutos. Si el token fuera
   // dependencia del efecto de abajo, cada renovación volvería a generar el
@@ -160,7 +169,7 @@ function Results() {
             type="button"
             onClick={retry}
             className="mt-3 rounded-md bg-red-700 px-4 py-2 text-sm font-medium text-white
-              hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+              hover:bg-red-800"
           >
             Volver a intentarlo
           </button>

@@ -46,7 +46,9 @@ const MAX_PAGES = 60;
 
 const INK = { r: 0.11, g: 0.16, b: 0.23 }; // slate-900
 const MUTED = { r: 0.39, g: 0.45, b: 0.55 }; // slate-500
-const ACCENT = { r: 0.01, g: 0.52, b: 0.78 }; // sky-600
+// sky-700, y no sky-600, porque encima va el número de la parada en blanco: con
+// sky-600 el contraste se queda en 4,1 y el mínimo para texto es 4,5.
+const ACCENT = { r: 0.012, g: 0.412, b: 0.631 };
 const LINE = { r: 0.89, g: 0.91, b: 0.94 }; // slate-200
 
 interface BlockStyle {

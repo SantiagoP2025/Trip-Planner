@@ -9,6 +9,7 @@ import {
   validateCredentials,
   type CredentialErrors,
 } from '../services/credentials.ts';
+import { useDocumentTitle } from '../services/use-document-title.ts';
 
 // Fase 8: entrar y crear cuenta. Sección 8.2, "Añadir autenticación antes de
 // permitir acceso a viajes privados".
@@ -22,9 +23,10 @@ type Status = 'idle' | 'submitting' | 'done';
 
 const inputClass =
   'rounded-md border border-slate-300 bg-white px-3 py-2 text-slate-900 shadow-sm ' +
-  'focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500';
+  'focus:border-sky-500';
 
 function Account() {
+  useDocumentTitle('Tu cuenta');
   const { status: authStatus, signIn, signUp } = useAuth();
   const formId = useId();
 
@@ -189,9 +191,8 @@ function Account() {
         <button
           type="submit"
           disabled={submitting}
-          className="rounded-md bg-sky-600 px-5 py-3 font-medium text-white shadow-sm
-            hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2
-            disabled:opacity-60"
+          className="rounded-md bg-sky-700 px-5 py-3 font-medium text-white shadow-sm
+            hover:bg-sky-800 disabled:opacity-60"
         >
           {submitting
             ? 'Un momento…'

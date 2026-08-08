@@ -1,4 +1,4 @@
-import { useId, useMemo, useState, type FormEvent } from 'react';
+import { useId, useMemo, useState, type FormEvent, type KeyboardEvent } from 'react';
 import { DayMap } from './DayMap.tsx';
 import { formatCurrency, formatDate, formatDuration, formatTime } from '../services/format.ts';
 import { hasCoordinates } from '../services/map-projection.ts';
@@ -42,7 +42,7 @@ type EditStatus = 'idle' | 'saving' | 'saved' | 'error';
 
 const inputClass =
   'w-full rounded-md border border-slate-300 bg-white px-2 py-1 text-sm text-slate-900 ' +
-  'focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500';
+  'focus:border-sky-500';
 
 function ItemEditor({
   item,
@@ -123,8 +123,8 @@ function ItemEditor({
         <button
           type="submit"
           disabled={status === 'saving'}
-          className="rounded-md bg-sky-600 px-3 py-1 text-xs font-medium text-white
-            hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-500 disabled:opacity-60"
+          className="rounded-md bg-sky-700 px-3 py-1 text-xs font-medium text-white hover:bg-sky-800
+            disabled:opacity-60"
         >
           {status === 'saving' ? 'Guardando…' : 'Guardar'}
         </button>
@@ -132,7 +132,7 @@ function ItemEditor({
           type="button"
           onClick={onClose}
           className="rounded-md border border-slate-300 px-3 py-1 text-xs text-slate-700
-            hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-sky-500"
+            hover:bg-slate-100"
         >
           Cancelar
         </button>
@@ -285,6 +285,7 @@ export function DayByDay({
   currency: string;
   editing?: ItineraryEditing;
 }) {
+  const groupId = useId();
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
   // El día elegido, o el primero mientras no se haya elegido ninguno. Se resuelve
@@ -309,26 +310,66 @@ export function DayByDay({
 
   if (days.length === 0 || !selectedDay) return null;
 
+  const selectedIndex = days.findIndex((day) => day.date === selectedDay.date);
+  const tabId = (date: string) => `${groupId}-tab-${date}`;
+  const panelId = `${groupId}-panel`;
+
+  // Teclado del patrón de pestañas: las flechas cambian de día, Inicio y Fin van
+  // al primero y al último. Sin esto, con veinte días hay que pulsar el tabulador
+  // veinte veces para llegar al itinerario, que es lo que el patrón evita.
+  function handleKeyDown(event: KeyboardEvent<HTMLDivElement>) {
+    const offsets: Record<string, number> = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 };
+    const offset = offsets[event.key];
+
+    let next: number | undefined;
+    if (offset !== undefined) next = (selectedIndex + offset + days.length) % days.length;
+    else if (event.key === 'Home') next = 0;
+    else if (event.key === 'End') next = days.length - 1;
+    if (next === undefined) return;
+
+    const day = days[next];
+    if (!day) return;
+
+    event.preventDefault();
+    setSelectedDate(day.date);
+    // El foco sigue al día elegido: el patrón mueve la selección y el foco a la
+    // vez, y si no, el lector de pantalla se queda anunciando el día anterior.
+    document.getElementById(tabId(day.date))?.focus();
+  }
+
   return (
     <section className="mt-4">
       <h3 className="text-sm font-semibold text-slate-900">Día a día</h3>
 
       {/* Un día cada vez: el itinerario de una semana en una sola lista no se
-          lee, y el mapa es "el mapa del día seleccionado". */}
-      <div className="mt-2 flex flex-wrap gap-1" role="tablist" aria-label="Días del viaje">
+          lee, y el mapa es "el mapa del día seleccionado".
+          Las pestañas llevan el patrón entero —panel, `aria-controls` y teclado—
+          y no solo los roles. Media implementación del patrón es peor que
+          ninguna: anuncia "pestaña 3 de 8" a quien luego no puede moverse
+          con las flechas, porque el rol promete un comportamiento que no está. */}
+      <div
+        className="mt-2 flex flex-wrap gap-1"
+        role="tablist"
+        aria-label="Días del viaje"
+        onKeyDown={handleKeyDown}
+      >
         {days.map((day, index) => {
           const isSelected = day.date === selectedDay.date;
           return (
             <button
               key={day.date}
+              id={tabId(day.date)}
               type="button"
               role="tab"
               aria-selected={isSelected}
+              aria-controls={panelId}
+              // Un solo tabulador para entrar y salir del grupo: dentro se
+              // circula con las flechas.
+              tabIndex={isSelected ? 0 : -1}
               onClick={() => setSelectedDate(day.date)}
-              className={`rounded-md px-3 py-1 text-xs font-medium focus:outline-none
-                focus:ring-2 focus:ring-sky-500 ${
+              className={`rounded-md px-3 py-1 text-xs font-medium ${
                   isSelected
-                    ? 'bg-sky-600 text-white'
+                    ? 'bg-sky-700 text-white'
                     : 'border border-slate-300 text-slate-700 hover:bg-slate-100'
                 }`}
             >
@@ -338,7 +379,13 @@ export function DayByDay({
         })}
       </div>
 
-      <article className="mt-3">
+      <article
+        id={panelId}
+        role="tabpanel"
+        aria-labelledby={tabId(selectedDay.date)}
+        tabIndex={0}
+        className="mt-3"
+      >
         <h4 className="text-sm font-medium text-slate-700">{formatDate(selectedDay.date)}</h4>
 
         {selectedDay.items.length === 0 ? (

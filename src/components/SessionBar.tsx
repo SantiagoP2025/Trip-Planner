@@ -53,8 +53,7 @@ export function SessionBar() {
             onClick={handleSignOut}
             disabled={signingOut}
             className="rounded-md border border-slate-300 px-3 py-1.5 text-slate-700
-              hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-sky-500
-              disabled:opacity-60"
+              hover:bg-slate-50 disabled:opacity-60"
           >
             {signingOut ? 'Cerrando…' : 'Cerrar sesión'}
           </button>

@@ -1,1 +1,21 @@
 @import "tailwindcss";
+
+/* Foco visible, en un solo sitio.
+ *
+ * Antes cada botón repetía `focus:outline-none focus:ring-2 focus:ring-sky-500`,
+ * y eso tenía dos problemas. El primero es que se olvida: el botón número
+ * dieciocho se queda sin indicador y nadie lo nota, porque quien lo escribe
+ * navega con el ratón. El segundo es que `ring` es un `box-shadow`, y en el modo
+ * de alto contraste de Windows los `box-shadow` se descartan: justo la gente que
+ * más necesita ver el foco se quedaba sin verlo.
+ *
+ * Un `outline` sobrevive al alto contraste, y esta regla lo pone en todo lo que
+ * se pueda enfocar, sin que haya que acordarse. `:focus-visible` y no `:focus`
+ * para que el anillo salga al navegar con el teclado y no al hacer clic. */
+@layer base {
+  :focus-visible {
+    outline: 2px solid var(--color-sky-700);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+}

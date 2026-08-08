@@ -2,23 +2,47 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
     <title>Trip Planner — Planificador de viajes automático</title>
     <meta
       name="description"
       content="Introduce origen, destino, fechas, viajeros y presupuesto y recibe tres propuestas de viaje completas: vuelo, alojamiento e itinerario día a día."
     />
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <!-- El color de la barra del navegador en móvil. Es el mismo sky-700 que el
+         icono y los botones de la aplicación. -->
+    <meta name="theme-color" content="#0369a1" />
+
     <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Trip Planner" />
+    <meta property="og:locale" content="es_ES" />
     <meta property="og:title" content="Trip Planner — Planificador de viajes automático" />
     <meta
       property="og:description"
       content="Introduce origen, destino, fechas, viajeros y presupuesto y recibe tres propuestas de viaje completas: vuelo, alojamiento e itinerario día a día."
     />
+    <!-- Sin `og:url`: es una URL absoluta y depende del dominio del despliegue.
+         Poner una que no sea la de verdad es peor que no ponerla, porque manda a
+         quien comparte el enlace a otro sitio. Se añade al fijar el dominio. -->
     <meta property="og:image" content="/og-image.png" />
+    <meta property="og:image:type" content="image/png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="Trip Planner: tres propuestas de viaje completas con vuelo, alojamiento e itinerario día a día."
+    />
+
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Trip Planner — Planificador de viajes automático" />
+    <meta
+      name="twitter:description"
+      content="Introduce origen, destino, fechas, viajeros y presupuesto y recibe tres propuestas de viaje completas: vuelo, alojamiento e itinerario día a día."
+    />
+    <meta name="twitter:image" content="/og-image.png" />
   </head>
   <body>
     <div id="root"></div>

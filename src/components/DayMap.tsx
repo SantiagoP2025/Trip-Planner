@@ -133,7 +133,7 @@ export function DayMap({ items, dayKey }: DayMapProps) {
             <polyline
               points={path}
               fill="none"
-              stroke="#0284c7"
+              stroke="#0369a1"
               strokeWidth={6}
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -143,7 +143,7 @@ export function DayMap({ items, dayKey }: DayMapProps) {
 
           {stops.map((stop) => (
             <g key={stop.id} data-testid="mapa-parada">
-              <circle cx={stop.x} cy={stop.y} r={30} fill="#0284c7" />
+              <circle cx={stop.x} cy={stop.y} r={30} fill="#0369a1" />
               <text
                 x={stop.x}
                 y={stop.y}
@@ -168,7 +168,7 @@ export function DayMap({ items, dayKey }: DayMapProps) {
           type="button"
           onClick={() => zoom(ZOOM_STEP)}
           className="rounded-md border border-slate-300 px-2 py-1 text-xs text-slate-700
-            hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-sky-500"
+            hover:bg-slate-100"
         >
           Acercar
         </button>
@@ -176,7 +176,7 @@ export function DayMap({ items, dayKey }: DayMapProps) {
           type="button"
           onClick={() => zoom(1 / ZOOM_STEP)}
           className="rounded-md border border-slate-300 px-2 py-1 text-xs text-slate-700
-            hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-sky-500"
+            hover:bg-slate-100"
         >
           Alejar
         </button>
@@ -184,7 +184,7 @@ export function DayMap({ items, dayKey }: DayMapProps) {
           type="button"
           onClick={reset}
           className="rounded-md border border-slate-300 px-2 py-1 text-xs text-slate-700
-            hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-sky-500"
+            hover:bg-slate-100"
         >
           Centrar
         </button>

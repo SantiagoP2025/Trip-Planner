@@ -57,7 +57,7 @@ export function DownloadPdfButton({
         onClick={handleClick}
         disabled={status === 'generating'}
         className="rounded-md border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700
-          hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-sky-500 disabled:opacity-60"
+          hover:bg-slate-50 disabled:opacity-60"
       >
         {status === 'generating' ? 'Preparando el PDF…' : 'Descargar en PDF'}
       </button>

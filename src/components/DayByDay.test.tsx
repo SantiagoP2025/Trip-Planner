@@ -325,3 +325,94 @@ describe('DayByDay — edición', () => {
     });
   });
 });
+
+// Fase 13. Las pestañas ya tenían los roles; lo que no tenían era el
+// comportamiento que esos roles prometen. Anunciar "pestaña 2 de 8" a quien
+// luego no puede moverse con las flechas es peor que no anunciar nada.
+describe('DayByDay — pestañas de los días (accesibilidad)', () => {
+  const TRES_DIAS = [
+    day([item({ id: 'a', title: 'Primero' })], '2026-09-11'),
+    day([item({ id: 'b', title: 'Segundo' })], '2026-09-12'),
+    day([item({ id: 'c', title: 'Tercero' })], '2026-09-13'),
+  ];
+
+  const renderDias = () => render(<DayByDay days={TRES_DIAS} currency="EUR" />);
+  const tab = (nombre: string) => screen.getByRole('tab', { name: nombre });
+
+  it('el panel del día dice de qué pestaña es', () => {
+    renderDias();
+    const panel = screen.getByRole('tabpanel');
+
+    expect(panel.getAttribute('aria-labelledby')).toBe(tab('Día 1').id);
+    expect(tab('Día 1').getAttribute('aria-controls')).toBe(panel.id);
+  });
+
+  // Un solo tabulador para entrar en el grupo y otro para salir: dentro se
+  // circula con las flechas. Sin esto, un viaje de veinte días son veinte
+  // tabuladores hasta llegar al itinerario.
+  it('solo el día seleccionado entra en el orden de tabulación', () => {
+    renderDias();
+
+    expect(tab('Día 1').tabIndex).toBe(0);
+    expect(tab('Día 2').tabIndex).toBe(-1);
+    expect(tab('Día 3').tabIndex).toBe(-1);
+  });
+
+  it('las flechas cambian de día y se llevan el foco', async () => {
+    renderDias();
+    const user = userEvent.setup();
+
+    tab('Día 1').focus();
+    await user.keyboard('{ArrowRight}');
+
+    expect(screen.getByText('Segundo')).toBeTruthy();
+    expect(document.activeElement).toBe(tab('Día 2'));
+    expect(tab('Día 2').getAttribute('aria-selected')).toBe('true');
+    expect(tab('Día 1').tabIndex).toBe(-1);
+  });
+
+  it('la flecha izquierda vuelve atrás', async () => {
+    renderDias();
+    const user = userEvent.setup();
+
+    tab('Día 1').focus();
+    await user.keyboard('{ArrowRight}{ArrowLeft}');
+
+    expect(screen.getByText('Primero')).toBeTruthy();
+    expect(document.activeElement).toBe(tab('Día 1'));
+  });
+
+  it('da la vuelta en los extremos', async () => {
+    renderDias();
+    const user = userEvent.setup();
+
+    tab('Día 1').focus();
+    await user.keyboard('{ArrowLeft}');
+
+    expect(screen.getByText('Tercero')).toBeTruthy();
+    expect(document.activeElement).toBe(tab('Día 3'));
+  });
+
+  it('Inicio y Fin van al primer y al último día', async () => {
+    renderDias();
+    const user = userEvent.setup();
+
+    tab('Día 1').focus();
+    await user.keyboard('{End}');
+    expect(screen.getByText('Tercero')).toBeTruthy();
+
+    await user.keyboard('{Home}');
+    expect(screen.getByText('Primero')).toBeTruthy();
+  });
+
+  // El resto del teclado tiene que seguir funcionando dentro del grupo.
+  it('no se queda con teclas que no son suyas', async () => {
+    renderDias();
+    const user = userEvent.setup();
+
+    tab('Día 1').focus();
+    await user.keyboard('{Tab}');
+
+    expect(document.activeElement).not.toBe(tab('Día 1'));
+  });
+});

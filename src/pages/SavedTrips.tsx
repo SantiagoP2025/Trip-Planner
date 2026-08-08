@@ -11,6 +11,7 @@ import {
 } from '../services/itinerary-edits.client.ts';
 import { deleteSavedTrip, listSavedTrips } from '../services/saved-trips.client.ts';
 import { readCachedSavedTrips, writeCachedSavedTrips } from '../services/saved-trips.cache.ts';
+import { useDocumentTitle } from '../services/use-document-title.ts';
 import type { ItineraryEdit, SavedTrip } from '../types/api.ts';
 
 // Fase 8: mis viajes guardados.
@@ -38,6 +39,7 @@ function Layout({ children }: { children: React.ReactNode }) {
 }
 
 function SavedTrips() {
+  useDocumentTitle('Mis viajes guardados');
   const { status: authStatus, user, accessToken } = useAuth();
 
   const [savedTrips, setSavedTrips] = useState<SavedTrip[]>([]);
@@ -248,7 +250,7 @@ function SavedTrips() {
               type="button"
               onClick={retry}
               className="mt-3 rounded-md bg-red-700 px-4 py-2 text-sm font-medium text-white
-                hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                hover:bg-red-800"
             >
               Volver a intentarlo
             </button>
@@ -296,8 +298,7 @@ function SavedTrips() {
                   onClick={() => handleDelete(trip.id)}
                   disabled={deletingId === trip.id}
                   className="rounded-md border border-slate-300 px-3 py-1.5 text-sm text-slate-700
-                    hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-sky-500
-                    disabled:opacity-60"
+                    hover:bg-slate-50 disabled:opacity-60"
                 >
                   {deletingId === trip.id ? 'Borrando…' : 'Quitar de mis viajes'}
                 </button>
