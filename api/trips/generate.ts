@@ -1,5 +1,6 @@
 import { createSessionVerifier } from '../../server/auth/create-session-verifier.js';
 import { GENERATE_RATE_LIMIT, RATE_LIMIT_MAX_TRACKED_KEYS } from '../../server/config/limits.js';
+import type { VercelWebFunction } from '../../server/http/handler.js';
 import { createGenerateTripHandler } from '../../server/http/handle-generate-trip.js';
 import { logError } from '../../server/http/logger.js';
 import { FixedWindowRateLimiter } from '../../server/http/rate-limit.js';
@@ -45,14 +46,19 @@ if (selection.status === 'invalid') {
   );
 }
 
-export default createGenerateTripHandler({
-  providers: {
-    flights: new MockFlightProvider(),
-    accommodations: new MockAccommodationProvider(),
-    places: new MockPlacesProvider(),
-    routes: new MockRoutesProvider(),
-  },
-  rateLimiter,
-  persistence: new BestEffortTripPersistence(selection.repository, { onError: logError }),
-  sessionVerifier: verifierSelection.verifier,
-});
+// `{ fetch }` y no el handler a pelo: es lo que hace que Vercel llame con un
+// `Request` estándar en vez de con los objetos de Node. El porqué, en
+// `server/http/handler.ts`.
+export default {
+  fetch: createGenerateTripHandler({
+    providers: {
+      flights: new MockFlightProvider(),
+      accommodations: new MockAccommodationProvider(),
+      places: new MockPlacesProvider(),
+      routes: new MockRoutesProvider(),
+    },
+    rateLimiter,
+    persistence: new BestEffortTripPersistence(selection.repository, { onError: logError }),
+    sessionVerifier: verifierSelection.verifier,
+  }),
+} satisfies VercelWebFunction;

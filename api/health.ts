@@ -1,4 +1,5 @@
 import { HEALTH_RATE_LIMIT, RATE_LIMIT_MAX_TRACKED_KEYS } from '../server/config/limits.js';
+import type { VercelWebFunction } from '../server/http/handler.js';
 import { createHealthHandler } from '../server/http/handle-health.js';
 import { FixedWindowRateLimiter } from '../server/http/rate-limit.js';
 
@@ -15,4 +16,7 @@ const rateLimiter = new FixedWindowRateLimiter({
   maxTrackedKeys: RATE_LIMIT_MAX_TRACKED_KEYS,
 });
 
-export default createHealthHandler({ rateLimiter });
+// `{ fetch }` y no el handler a pelo: es lo que hace que Vercel llame con un
+// `Request` estándar en vez de con los objetos de Node. El porqué, en
+// `server/http/handler.ts`.
+export default { fetch: createHealthHandler({ rateLimiter }) } satisfies VercelWebFunction;

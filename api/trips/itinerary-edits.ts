@@ -1,5 +1,6 @@
 import { createSessionVerifier } from '../../server/auth/create-session-verifier.js';
 import { RATE_LIMIT_MAX_TRACKED_KEYS, SAVED_TRIPS_RATE_LIMIT } from '../../server/config/limits.js';
+import type { VercelWebFunction } from '../../server/http/handler.js';
 import { createItineraryEditsHandler } from '../../server/http/handle-itinerary-edits.js';
 import { logError } from '../../server/http/logger.js';
 import { FixedWindowRateLimiter } from '../../server/http/rate-limit.js';
@@ -36,8 +37,15 @@ if (verifierSelection.status === 'invalid') {
   );
 }
 
-export default createItineraryEditsHandler({
-  repository: repositorySelection.repository,
-  sessionVerifier: verifierSelection.verifier,
-  rateLimiter,
-});
+// `{ fetch }` y no el handler a pelo: es lo que hace que Vercel llame con un
+// `Request` estándar en vez de con los objetos de Node. Aquí importa doble,
+// porque este handler lee `new URL(request.url)` para sacar el `id`, y con la
+// firma de Node `request.url` es solo la ruta y `new URL` lanza. El porqué, en
+// `server/http/handler.ts`.
+export default {
+  fetch: createItineraryEditsHandler({
+    repository: repositorySelection.repository,
+    sessionVerifier: verifierSelection.verifier,
+    rateLimiter,
+  }),
+} satisfies VercelWebFunction;

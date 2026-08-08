@@ -25,6 +25,24 @@ const ROUTES: Record<string, string> = {
 
 type Handler = (request: Request) => Promise<Response>;
 
+// El handler se saca de `default.fetch`, exactamente de donde lo saca Vercel, y
+// no de `default` a secas. Cuando esto último era lo que hacía este plugin,
+// bastaba con exportar el handler a pelo para que el desarrollo local
+// funcionase y la producción devolviese 500: la diferencia entre las dos formas
+// de exportar, que es la que decide si llega un `Request` o los objetos de Node,
+// no se notaba en ningún sitio. Ver `server/http/handler.ts`.
+function handlerOf(loaded: Record<string, unknown>, route: string): Handler {
+  const exported = loaded.default as { fetch?: Handler } | undefined;
+
+  if (typeof exported?.fetch !== 'function') {
+    throw new Error(
+      `${route}: el fichero de api/ tiene que exportar \`{ fetch }\`, no el handler a pelo.`,
+    );
+  }
+
+  return exported.fetch;
+}
+
 async function readBody(req: IncomingMessage): Promise<Buffer | undefined> {
   if (req.method === 'GET' || req.method === 'HEAD') return undefined;
 
@@ -75,7 +93,7 @@ export function apiDevServer(): Plugin {
           // `ssrLoadModule` recarga el handler en caliente, así que tocar el
           // servidor no obliga a reiniciar el servidor de desarrollo.
           const loaded = await server.ssrLoadModule(modulePath);
-          const handler = loaded.default as Handler;
+          const handler = handlerOf(loaded, url.pathname);
           const request = toWebRequest(req, await readBody(req), url);
           await sendResponse(res, await handler(request));
         } catch (error) {
