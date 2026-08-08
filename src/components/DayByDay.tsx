@@ -1,3 +1,5 @@
+import { useMemo, useState } from 'react';
+import { DayMap, hasCoordinates } from './DayMap.tsx';
 import { formatCurrency, formatDate, formatDuration, formatTime } from '../services/format.ts';
 import type { ItineraryDay, ItineraryItem, ItineraryItemType } from '../types/api.ts';
 
@@ -75,29 +77,69 @@ function Item({ item, currency }: { item: ItineraryItem; currency: string }) {
 }
 
 export function DayByDay({ days, currency }: { days: ItineraryDay[]; currency: string }) {
-  if (days.length === 0) return null;
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+
+  // El día elegido, o el primero mientras no se haya elegido ninguno. Se resuelve
+  // así, y no copiando el primer día a un estado inicial, para que un itinerario
+  // que cambia —otra búsqueda, otra propuesta— no deje seleccionada una fecha
+  // que ya no existe.
+  const selectedDay = days.find((day) => day.date === selectedDate) ?? days[0];
+
+  // Regla 13: el array que alimenta el mapa se memoriza. Sin esto cambiaría de
+  // identidad en cada render y arrastraría al efecto de encuadre con él.
+  const stops = useMemo(
+    () => (selectedDay?.items ?? []).filter(hasCoordinates),
+    [selectedDay],
+  );
+
+  if (days.length === 0 || !selectedDay) return null;
 
   return (
     <section className="mt-4">
       <h3 className="text-sm font-semibold text-slate-900">Día a día</h3>
 
-      <div className="mt-2 flex flex-col gap-4">
-        {days.map((day) => (
-          <article key={day.date}>
-            <h4 className="text-sm font-medium text-slate-700">{formatDate(day.date)}</h4>
-
-            {day.items.length === 0 ? (
-              <p className="mt-1 text-sm text-slate-500">Día libre, sin nada programado.</p>
-            ) : (
-              <ul className="mt-1 divide-y divide-slate-100">
-                {day.items.map((item) => (
-                  <Item key={item.id} item={item} currency={currency} />
-                ))}
-              </ul>
-            )}
-          </article>
-        ))}
+      {/* Un día cada vez: el itinerario de una semana en una sola lista no se
+          lee, y el mapa es "el mapa del día seleccionado". */}
+      <div className="mt-2 flex flex-wrap gap-1" role="tablist" aria-label="Días del viaje">
+        {days.map((day, index) => {
+          const isSelected = day.date === selectedDay.date;
+          return (
+            <button
+              key={day.date}
+              type="button"
+              role="tab"
+              aria-selected={isSelected}
+              onClick={() => setSelectedDate(day.date)}
+              className={`rounded-md px-3 py-1 text-xs font-medium focus:outline-none
+                focus:ring-2 focus:ring-sky-500 ${
+                  isSelected
+                    ? 'bg-sky-600 text-white'
+                    : 'border border-slate-300 text-slate-700 hover:bg-slate-100'
+                }`}
+            >
+              Día {index + 1}
+            </button>
+          );
+        })}
       </div>
+
+      <article className="mt-3">
+        <h4 className="text-sm font-medium text-slate-700">{formatDate(selectedDay.date)}</h4>
+
+        {selectedDay.items.length === 0 ? (
+          <p className="mt-1 text-sm text-slate-500">Día libre, sin nada programado.</p>
+        ) : (
+          <ul className="mt-1 divide-y divide-slate-100">
+            {selectedDay.items.map((item) => (
+              <Item key={item.id} item={item} currency={currency} />
+            ))}
+          </ul>
+        )}
+
+        {/* Si el día no tiene paradas con coordenadas, `DayMap` no renderiza
+            nada: un lienzo vacío no informa de nada. */}
+        <DayMap items={stops} dayKey={selectedDay.date} />
+      </article>
     </section>
   );
 }

@@ -51,6 +51,30 @@ Sin `SUPABASE_URL` ni `SUPABASE_ANON_KEY`, la aplicación sigue generando viajes
 
 Las migraciones de `supabase/migrations/` se aplican con `supabase db push`, o pegándolas en el editor SQL del proyecto.
 
+## Mapas
+
+**Hoy no se cargan teselas de ningún proveedor, y es deliberado.** Las coordenadas que devuelve el proveedor de lugares son simuladas: son coordenadas posibles, pero no son las del destino que ha buscado el usuario. Dibujarlas sobre un mapa real enseñaría un pueblo cualquiera, con sus calles y sus nombres, a quien ha buscado Tokio. No parecería provisional: parecería que la aplicación miente.
+
+Mientras tanto, `DayMap` dibuja un esquema de las paradas del día: posiciones relativas verdaderas —quién está cerca de quién, en qué dirección y en qué orden— sobre un fondo que no pretende ser ningún sitio, y con un pie que lo dice.
+
+### Cuando haya coordenadas reales
+
+Al conectar el proveedor de lugares real, el esquema se sustituye por un mapa con teselas. Lo que hay que tener decidido para entonces:
+
+**No usar directamente `tile.openstreetmap.org`.** Ese servidor lo mantiene la fundación OpenStreetMap con donaciones y su política de uso restringe las aplicaciones desplegadas, más aún si se monetizan. La atribución es necesaria pero no suficiente.
+
+Candidatos, por orden de preferencia:
+
+| Proveedor | Modelo | Por qué |
+| --- | --- | --- |
+| **Protomaps** (PMTiles) | Fichero propio servido desde nuestro CDN | Sin coste por carga ni por usuario: se paga el almacenamiento y el tráfico, que ya pagamos. Es el único que no añade un coste que crece con el uso. |
+| **MapTiler** | Plan gratuito con tope mensual, después por volumen | Alternativa gestionada si no queremos mantener el fichero de teselas. |
+| **Mapbox** | Plan gratuito con tope mensual, después por millar de cargas | El más completo, y el más caro cuando el tope se queda corto. |
+
+**Coste por usuario.** Con los tres primeros, salvo Protomaps, el coste es *por carga de mapa*, no por usuario registrado: un usuario que abre tres propuestas y cambia de día cinco veces puede generar decenas de cargas. Ese multiplicador es lo que hay que medir antes de elegir, y por eso Protomaps encabeza la lista.
+
+Las cifras concretas de cada plan cambian a menudo: **hay que confirmarlas en el momento de contratar**, no darlas por buenas desde aquí. Lo que no cambia es la forma del coste, que es lo que entra en el modelo de precios.
+
 ## Despliegue
 
 Desplegado en Vercel. `vercel.json` reescribe cualquier ruta que no empiece por `/api/` a `index.html`, para que React Router funcione al refrescar la página en una ruta como `/results`.

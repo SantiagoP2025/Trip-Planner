@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import { cleanup, render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it } from 'vitest';
 import type { ItineraryDay, ItineraryItem } from '../types/api.ts';
 import { DayByDay } from './DayByDay.tsx';
@@ -31,7 +32,9 @@ describe('DayByDay', () => {
     expect(screen.getByText('10:00–11:30')).toBeTruthy();
   });
 
-  it('agrupa las paradas por día', () => {
+  // El itinerario de una semana en una sola lista no se lee, y el mapa es "el
+  // mapa del día seleccionado": hace falta que haya un día seleccionado.
+  it('enseña un día cada vez, empezando por el primero', () => {
     render(
       <DayByDay
         days={[
@@ -43,7 +46,40 @@ describe('DayByDay', () => {
     );
 
     expect(screen.getByText('11 de septiembre de 2026')).toBeTruthy();
+    expect(screen.getByText('Primero')).toBeTruthy();
+    expect(screen.queryByText('Segundo')).toBeNull();
+  });
+
+  it('deja cambiar de día', async () => {
+    render(
+      <DayByDay
+        days={[
+          day([item({ id: 'a', title: 'Primero' })], '2026-09-11'),
+          day([item({ id: 'b', title: 'Segundo' })], '2026-09-12'),
+        ]}
+        currency="EUR"
+      />,
+    );
+
+    await userEvent.setup().click(screen.getByRole('tab', { name: 'Día 2' }));
+
     expect(screen.getByText('12 de septiembre de 2026')).toBeTruthy();
+    expect(screen.getByText('Segundo')).toBeTruthy();
+    expect(screen.queryByText('Primero')).toBeNull();
+  });
+
+  // Un itinerario que cambia —otra búsqueda, otra propuesta— no puede dejar
+  // seleccionada una fecha que ya no existe.
+  it('vuelve al primer día si el itinerario cambia por completo', () => {
+    const { rerender } = render(
+      <DayByDay days={[day([item({ id: 'a', title: 'Primero' })], '2026-09-11')]} currency="EUR" />,
+    );
+
+    rerender(
+      <DayByDay days={[day([item({ id: 'z', title: 'Otro viaje' })], '2027-01-05')]} currency="EUR" />,
+    );
+
+    expect(screen.getByText('Otro viaje')).toBeTruthy();
   });
 
   it('dice cuánto se tarda en llegar cuando el backend lo manda', () => {
