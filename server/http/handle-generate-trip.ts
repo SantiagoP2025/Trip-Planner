@@ -1,4 +1,9 @@
+import { NoopTripRepository } from '../repositories/noop-trip.repository.ts';
 import { validateTripRequest, type TripRequestInput } from '../schemas/trip.schema.ts';
+import {
+  BestEffortTripPersistence,
+  type TripPersistence,
+} from '../services/trip-persistence.service.ts';
 import {
   generateTripProposals,
   TripProviderError,
@@ -24,6 +29,9 @@ const ROUTE = '/api/trips/generate';
 export interface GenerateTripHandlerDependencies {
   providers: TripPlannerProviders;
   rateLimiter: RateLimiter;
+  // Sin persistencia configurada el endpoint funciona igual y no guarda nada:
+  // es el criterio best-effort de la fase 6, también cuando no hay base de datos.
+  persistence?: TripPersistence;
   now?: () => Date;
   newRequestId?: () => string;
 }
@@ -51,6 +59,8 @@ export function createGenerateTripHandler(
 ): RequestHandler {
   const now = dependencies.now ?? (() => new Date());
   const newRequestId = dependencies.newRequestId ?? createRequestId;
+  const persistence =
+    dependencies.persistence ?? new BestEffortTripPersistence(new NoopTripRepository());
 
   return async function handleGenerateTrip(request: Request): Promise<Response> {
     const requestId = newRequestId();
@@ -116,18 +126,42 @@ export function createGenerateTripHandler(
       );
     }
 
+    const tripRequest = toTripRequest(validation.data);
+
+    // La fila de la solicitud se crea a la vez que se genera el viaje, no antes:
+    // no depende del resultado, así que su ida y vuelta a la base de datos se
+    // esconde detrás del trabajo del motor en vez de sumarse a él.
+    //
+    // `begin` es best-effort y nunca rechaza, así que esta promesa suelta no
+    // puede convertirse en un rechazo sin atender.
+    const pendingTripId = persistence.begin(requestId, {
+      request: tripRequest,
+      // Todavía no hay usuario autenticado: las cuentas llegan en la fase 8.
+      // Hasta entonces la fila queda a nombre de nadie y, por RLS, invisible
+      // para cualquiera que no sea el propio servidor.
+      userId: null,
+    });
+
     try {
-      const result = await generateTripProposals(
-        toTripRequest(validation.data),
-        dependencies.providers,
-      );
+      const result = await generateTripProposals(tripRequest, dependencies.providers);
 
       logGenerationDiagnostics(requestId, result.diagnostics);
+
+      const tripId = await pendingTripId;
+      await persistence.complete(requestId, tripId, {
+        status: result.proposals.length > 0 ? 'completed' : 'empty',
+        proposals: result.proposals,
+        diagnostics: result.diagnostics,
+        failure: null,
+      });
 
       const responseBody: GenerateTripResponseBody = {
         requestId,
         generatedAt: now().toISOString(),
         proposals: result.proposals,
+        // Solo cuando de verdad hay fila que recuperar después. Si la base de
+        // datos falló, el viaje se devuelve igual y sin identificador.
+        ...(tripId !== null ? { tripId } : {}),
         // Que no salga ninguna propuesta viable no es un error: es la respuesta
         // correcta a un presupuesto o unas restricciones que no dan de sí.
         ...(result.proposals.length === 0
@@ -139,9 +173,22 @@ export function createGenerateTripHandler(
       };
 
       // 200 y no 201: la sección 16.1 reserva el 201 para "Viaje generado y
-      // guardado", y todavía no se guarda nada (llega en la fase 6).
+      // guardado", y guardarlo aquí es best-effort. Prometer en el código de
+      // estado algo que puede no haber ocurrido sería mentir.
       return respond(jsonResponse(200, responseBody, limitHeaders), 'generated');
     } catch (error) {
+      // Sección 13.1: la solicitud se cierra como fallida, con la causa, para
+      // que no quede en `pending` como si la generación siguiera viva.
+      await persistence.complete(requestId, await pendingTripId, {
+        status: 'failed',
+        proposals: [],
+        diagnostics: null,
+        failure: {
+          provider: error instanceof TripProviderError ? error.provider : null,
+          message: error instanceof Error ? error.message : String(error),
+        },
+      });
+
       // Sección 16.1: el fallo de un proveedor externo es un 502, no un 500.
       if (error instanceof TripProviderError) {
         logError(requestId, 'trip.provider_error', error);

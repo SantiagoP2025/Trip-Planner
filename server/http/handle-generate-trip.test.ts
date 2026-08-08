@@ -6,6 +6,15 @@ import { MockPlacesProvider } from '../providers/mock-places.provider.ts';
 import type { AccommodationProvider } from '../providers/accommodation.provider.ts';
 import type { FlightProvider } from '../providers/flight.provider.ts';
 import type { PlacesProvider } from '../providers/places.provider.ts';
+import type {
+  NewTripRequest,
+  TripGenerationOutcome,
+  TripRepository,
+} from '../repositories/trip.repository.ts';
+import {
+  BestEffortTripPersistence,
+  type TripPersistence,
+} from '../services/trip-persistence.service.ts';
 import type { TripPlannerProviders } from '../services/trip-planner.service.ts';
 import type { ApiErrorBody, GenerateTripResponseBody } from '../types/api.ts';
 import type { FlightOffer } from '../types/flight.ts';
@@ -43,11 +52,16 @@ function permissiveLimiter(): RateLimiter {
 }
 
 function buildHandler(
-  overrides: { providers?: TripPlannerProviders; rateLimiter?: RateLimiter } = {},
+  overrides: {
+    providers?: TripPlannerProviders;
+    rateLimiter?: RateLimiter;
+    persistence?: TripPersistence;
+  } = {},
 ) {
   return createGenerateTripHandler({
     providers: overrides.providers ?? mockProviders(),
     rateLimiter: overrides.rateLimiter ?? permissiveLimiter(),
+    ...(overrides.persistence ? { persistence: overrides.persistence } : {}),
   });
 }
 
@@ -364,5 +378,161 @@ describe('POST /api/trips/generate — fallos', () => {
     expect(response.status).toBe(200);
     expect(body.proposals).toEqual([]);
     expect(body.message).toBeDefined();
+  });
+});
+
+// Sección 17.2: "Endpoint → Supabase". Sin base de datos real: lo que se
+// comprueba es qué le pide el endpoint al repositorio y, sobre todo, que un
+// fallo de escritura no cambie ni una coma de lo que ve el usuario.
+describe('POST /api/trips/generate — persistencia', () => {
+  class RecordingRepository implements TripRepository {
+    readonly created: NewTripRequest[] = [];
+    readonly completed: { tripRequestId: string; outcome: TripGenerationOutcome }[] = [];
+
+    async createTripRequest(record: NewTripRequest): Promise<string | null> {
+      this.created.push(record);
+      return 'solicitud-1';
+    }
+
+    async saveGenerationOutcome(
+      tripRequestId: string,
+      outcome: TripGenerationOutcome,
+    ): Promise<void> {
+      this.completed.push({ tripRequestId, outcome });
+    }
+  }
+
+  function withRepository(repository: TripRepository): TripPersistence {
+    return new BestEffortTripPersistence(repository);
+  }
+
+  it('guarda la solicitud y devuelve su identificador', async () => {
+    const repository = new RecordingRepository();
+    const response = await buildHandler({ persistence: withRepository(repository) })(
+      postRequest(validBody()),
+    );
+    const body = (await response.json()) as GenerateTripResponseBody;
+
+    expect(response.status).toBe(200);
+    expect(body.tripId).toBe('solicitud-1');
+    expect(repository.created).toHaveLength(1);
+    expect(repository.created[0]?.request.destination).toBe('Lisboa');
+  });
+
+  // Las cuentas llegan en la fase 8; hasta entonces la fila no es de nadie.
+  it('guarda la solicitud sin usuario mientras no haya cuentas', async () => {
+    const repository = new RecordingRepository();
+    await buildHandler({ persistence: withRepository(repository) })(postRequest(validBody()));
+
+    expect(repository.created[0]?.userId).toBeNull();
+  });
+
+  it('cierra la solicitud como completada con sus propuestas', async () => {
+    const repository = new RecordingRepository();
+    await buildHandler({ persistence: withRepository(repository) })(postRequest(validBody()));
+
+    const [completed] = repository.completed;
+    expect(completed?.tripRequestId).toBe('solicitud-1');
+    expect(completed?.outcome.status).toBe('completed');
+    expect(completed?.outcome.proposals).toHaveLength(3);
+    expect(completed?.outcome.diagnostics).not.toBeNull();
+  });
+
+  // Criterio de la fase 6: si la base de datos falla, el viaje se genera igual.
+  it('devuelve las propuestas aunque la base de datos falle entera', async () => {
+    const persistence = withRepository({
+      createTripRequest: () => Promise.reject(new Error('base de datos caída')),
+      saveGenerationOutcome: () => Promise.reject(new Error('base de datos caída')),
+    });
+
+    const response = await buildHandler({ persistence })(postRequest(validBody()));
+    const body = (await response.json()) as GenerateTripResponseBody;
+
+    expect(response.status).toBe(200);
+    expect(body.proposals).toHaveLength(3);
+    // Sin fila guardada no hay identificador que prometer.
+    expect(body.tripId).toBeUndefined();
+  });
+
+  it('devuelve las propuestas aunque falle solo el cierre', async () => {
+    const persistence = withRepository({
+      createTripRequest: async () => 'solicitud-1',
+      saveGenerationOutcome: () => Promise.reject(new Error('se cayó al guardar')),
+    });
+
+    const response = await buildHandler({ persistence })(postRequest(validBody()));
+    const body = (await response.json()) as GenerateTripResponseBody;
+
+    expect(response.status).toBe(200);
+    expect(body.proposals).toHaveLength(3);
+  });
+
+  // CLAUDE.md: al usuario nunca le llega el detalle técnico.
+  it('no filtra el error de base de datos en la respuesta', async () => {
+    const persistence = withRepository({
+      createTripRequest: () => Promise.reject(new Error('contraseña de postgres incorrecta')),
+      saveGenerationOutcome: async () => {},
+    });
+
+    const raw = await (await buildHandler({ persistence })(postRequest(validBody()))).text();
+
+    expect(raw).not.toContain('postgres');
+    expect(raw).not.toContain('contraseña');
+  });
+
+  it('marca la solicitud como vacía cuando no hay propuestas viables', async () => {
+    const repository = new RecordingRepository();
+    const providers: TripPlannerProviders = {
+      flights: { searchFlights: async () => [] },
+      accommodations: { searchAccommodations: async () => [] },
+      places: { searchActivities: async () => [] },
+    };
+
+    await buildHandler({ providers, persistence: withRepository(repository) })(
+      postRequest(validBody()),
+    );
+
+    expect(repository.completed[0]?.outcome.status).toBe('empty');
+  });
+
+  // Sección 13.1: una solicitud no puede quedarse en `pending` como si la
+  // generación siguiera viva cuando en realidad se cayó.
+  it('cierra la solicitud como fallida y anota el proveedor culpable', async () => {
+    const repository = new RecordingRepository();
+    const providers: TripPlannerProviders = {
+      flights: { searchFlights: () => Promise.reject(new Error('timeout de Amadeus')) },
+      accommodations: { searchAccommodations: async () => [] },
+      places: { searchActivities: async () => [] },
+    };
+
+    const response = await buildHandler({ providers, persistence: withRepository(repository) })(
+      postRequest(validBody()),
+    );
+
+    expect(response.status).toBe(502);
+    const [completed] = repository.completed;
+    expect(completed?.outcome.status).toBe('failed');
+    expect(completed?.outcome.failure?.provider).toBe('flights');
+  });
+
+  // La fila se crea a la vez que se genera, no antes ni después.
+  it('no guarda nada cuando la solicitud ni siquiera es válida', async () => {
+    const repository = new RecordingRepository();
+    await buildHandler({ persistence: withRepository(repository) })(
+      postRequest(validBody({ budget: 0 })),
+    );
+
+    expect(repository.created).toHaveLength(0);
+  });
+
+  it('no guarda nada cuando la petición se ha frenado por límite', async () => {
+    const repository = new RecordingRepository();
+    const rateLimiter = new FixedWindowRateLimiter({ windowMs: 60_000, maxRequests: 1 });
+    const handler = buildHandler({ rateLimiter, persistence: withRepository(repository) });
+
+    await handler(postRequest(validBody()));
+    await handler(postRequest(validBody()));
+
+    expect(repository.created).toHaveLength(1);
   });
 });

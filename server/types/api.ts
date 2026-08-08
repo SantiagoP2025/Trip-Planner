@@ -29,6 +29,10 @@ export interface GenerateTripResponseBody {
   requestId: string;
   generatedAt: string;
   proposals: TripProposal[];
+  // Identificador de la fila de `trip_requests` (sección 13.1). Solo viene
+  // cuando el viaje se ha llegado a guardar: la persistencia es best-effort, así
+  // que su ausencia significa que no hay nada que recuperar después, no un error.
+  tripId?: string;
   // Presente solo cuando no hay ninguna propuesta viable, que es un resultado
   // legítimo y no un error.
   message?: string;
