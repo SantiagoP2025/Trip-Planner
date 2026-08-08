@@ -31,3 +31,12 @@ export const MAX_SAVED_TRIP_TITLE_LENGTH = 120;
 // regla 5, que no admite entradas sin límite. Sin tope, una cuenta puede crecer
 // sin fin y la consulta de la lista deja de estar acotada.
 export const MAX_SAVED_TRIPS_PER_USER = 100;
+
+// Fase 11: los textos con los que el usuario reescribe un bloque del itinerario.
+// Los mismos números están repetidos en las restricciones de la migración 0003.
+//
+// Cuántas ediciones puede haber no necesita tope propio: solo se admite editar
+// un elemento que exista en el itinerario, y el itinerario está acotado por la
+// sección 12.1 (tres visitas al día) y por las 30 noches de la regla 5.
+export const MAX_EDIT_TITLE_LENGTH = 120;
+export const MAX_EDIT_DESCRIPTION_LENGTH = 500;

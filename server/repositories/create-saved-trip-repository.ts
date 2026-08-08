@@ -1,5 +1,5 @@
 import { readSupabaseConfig, type SupabaseConfigResult } from '../config/env.ts';
-import type { SavedTrip } from '../types/saved-trip.ts';
+import type { ItineraryEdit, SavedTrip } from '../types/saved-trip.ts';
 import type { ProposalType } from '../types/trip.ts';
 import type {
   NewSavedTrip,
@@ -56,6 +56,21 @@ export class UnavailableSavedTripRepository implements SavedTripRepository {
   }
 
   deleteById(_savedTripId: string, _userId: string): Promise<boolean> {
+    this.fail();
+  }
+
+  findSavedTripForUser(_savedTripId: string, _userId: string): Promise<SavedTrip | null> {
+    this.fail();
+  }
+
+  upsertEdit(
+    _savedTripId: string,
+    _edit: Omit<ItineraryEdit, 'updatedAt'>,
+  ): Promise<ItineraryEdit> {
+    this.fail();
+  }
+
+  deleteEdit(_savedTripId: string, _itemId: string): Promise<boolean> {
     this.fail();
   }
 }

@@ -1,12 +1,17 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider.tsx';
+import type { ItineraryEditing } from '../components/DayByDay.tsx';
 import { ProposalCard } from '../components/ProposalCard.tsx';
 import { SessionBar } from '../components/SessionBar.tsx';
 import { formatDate } from '../services/format.ts';
+import {
+  revertItineraryEdit,
+  saveItineraryEdit,
+} from '../services/itinerary-edits.client.ts';
 import { deleteSavedTrip, listSavedTrips } from '../services/saved-trips.client.ts';
 import { readCachedSavedTrips, writeCachedSavedTrips } from '../services/saved-trips.cache.ts';
-import type { SavedTrip } from '../types/api.ts';
+import type { ItineraryEdit, SavedTrip } from '../types/api.ts';
 
 // Fase 8: mis viajes guardados.
 //
@@ -122,6 +127,50 @@ function SavedTrips() {
     } finally {
       setDeletingId(null);
     }
+  }
+
+  // Fase 11. Guarda la lista nueva en el estado y en la caché de una vez: son
+  // los dos sitios que enseñan viajes, y dejar uno atrás haría que la edición
+  // apareciera y desapareciera al recargar.
+  function applyEdits(tripId: string, edits: ItineraryEdit[]) {
+    const updated = savedTrips.map((trip) => (trip.id === tripId ? { ...trip, edits } : trip));
+    setSavedTrips(updated);
+
+    if (!userId) return;
+    const written = writeCachedSavedTrips(userId, updated);
+    setCacheWarning(
+      written.ok
+        ? ''
+        : 'No hemos podido actualizar la copia de este dispositivo. Tus cambios siguen guardados en tu cuenta.',
+    );
+  }
+
+  // Las dos operaciones dejan que el error suba: quien lo enseña es el bloque
+  // que el usuario está editando, que es donde está mirando (regla 15).
+  function editingFor(trip: SavedTrip): ItineraryEditing {
+    return {
+      edits: trip.edits,
+
+      async save(itemId, fields) {
+        if (!accessToken) throw new Error('Tu sesión ha caducado. Vuelve a entrar.');
+
+        const edit = await saveItineraryEdit(accessToken, trip.id, itemId, fields);
+        // `null` significa que lo escrito no cambiaba nada: el servidor lo trata
+        // como una vuelta al original y aquí hay que quitar la marca, no añadirla.
+        const rest = trip.edits.filter((current) => current.itemId !== itemId);
+        applyEdits(trip.id, edit ? [...rest, edit] : rest);
+      },
+
+      async revert(itemId) {
+        if (!accessToken) throw new Error('Tu sesión ha caducado. Vuelve a entrar.');
+
+        await revertItineraryEdit(accessToken, trip.id, itemId);
+        applyEdits(
+          trip.id,
+          trip.edits.filter((current) => current.itemId !== itemId),
+        );
+      },
+    };
   }
 
   if (authStatus === 'loading') {
@@ -254,7 +303,7 @@ function SavedTrips() {
                 </button>
               </header>
 
-              <ProposalCard proposal={trip.proposal} />
+              <ProposalCard proposal={trip.proposal} editing={editingFor(trip)} />
             </section>
           ))}
         </div>

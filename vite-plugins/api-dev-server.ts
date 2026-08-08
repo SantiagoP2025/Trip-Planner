@@ -20,6 +20,7 @@ const ROUTES: Record<string, string> = {
   '/api/config': '/api/config.ts',
   '/api/trips/generate': '/api/trips/generate.ts',
   '/api/trips/saved': '/api/trips/saved.ts',
+  '/api/trips/itinerary-edits': '/api/trips/itinerary-edits.ts',
 };
 
 type Handler = (request: Request) => Promise<Response>;

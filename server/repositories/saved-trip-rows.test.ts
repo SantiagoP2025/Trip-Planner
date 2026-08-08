@@ -56,6 +56,7 @@ describe('toSavedTrip', () => {
       departureDate: '2026-09-10',
       returnDate: '2026-09-17',
       proposal: PROPOSAL,
+      edits: [],
     });
   });
 

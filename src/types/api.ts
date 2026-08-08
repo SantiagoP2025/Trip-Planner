@@ -37,13 +37,15 @@ export type {
   ItineraryItemType,
 } from '../../server/types/itinerary.ts';
 
-export type { SavedTrip } from '../../server/types/saved-trip.ts';
+export type { ItineraryEdit, SavedTrip } from '../../server/types/saved-trip.ts';
 
 export type {
   ApiErrorBody,
   ApiErrorCode,
+  DeleteItineraryEditResponseBody,
   DeleteSavedTripResponseBody,
   GenerateTripResponseBody,
+  ItineraryEditResponseBody,
   RuntimeConfigResponseBody,
   SavedTripsResponseBody,
   SaveTripResponseBody,

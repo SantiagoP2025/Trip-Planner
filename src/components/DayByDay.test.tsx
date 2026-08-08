@@ -1,9 +1,9 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { ItineraryDay, ItineraryItem } from '../types/api.ts';
-import { DayByDay } from './DayByDay.tsx';
+import { DayByDay, type ItineraryEditing } from './DayByDay.tsx';
 
 afterEach(cleanup);
 
@@ -164,5 +164,164 @@ describe('DayByDay', () => {
 
     const titulos = screen.getAllByText(/Primera|Segunda/).map((node) => node.textContent);
     expect(titulos).toEqual(['Segunda', 'Primera']);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Edición del itinerario (fase 11)
+// ---------------------------------------------------------------------------
+
+const ORIGINAL = item({ id: 'bloque-1', title: 'Cena', description: 'Sin restaurante asignado' });
+
+function editingProps(overrides: Partial<ItineraryEditing> = {}): ItineraryEditing {
+  return {
+    edits: [],
+    save: async () => {},
+    revert: async () => {},
+    ...overrides,
+  };
+}
+
+function renderEditable(editing: ItineraryEditing, items: ItineraryItem[] = [ORIGINAL]) {
+  return render(<DayByDay days={[day(items)]} currency="EUR" editing={editing} />);
+}
+
+describe('DayByDay — edición', () => {
+  // Depende de la fase 8: sin viaje guardado no hay dónde guardar lo que el
+  // usuario escriba, así que ni se ofrece.
+  it('no ofrece editar si la pantalla no lo permite', () => {
+    render(<DayByDay days={[day([ORIGINAL])]} currency="EUR" />);
+
+    expect(screen.queryByRole('button', { name: 'Editar' })).toBeNull();
+  });
+
+  it('ofrece editar cuando hay dónde guardar', () => {
+    renderEditable(editingProps());
+
+    expect(screen.getByRole('button', { name: 'Editar' })).toBeTruthy();
+  });
+
+  it('el formulario abre con lo que el usuario está viendo', async () => {
+    renderEditable(editingProps());
+
+    await userEvent.setup().click(screen.getByRole('button', { name: 'Editar' }));
+
+    expect((screen.getByLabelText('Título') as HTMLInputElement).value).toBe('Cena');
+    expect((screen.getByLabelText('Notas') as HTMLTextAreaElement).value).toBe(
+      'Sin restaurante asignado',
+    );
+  });
+
+  it('manda al servidor lo que el usuario escribe', async () => {
+    const save = vi.fn(async () => {});
+    renderEditable(editingProps({ save }));
+    const user = userEvent.setup();
+
+    await user.click(screen.getByRole('button', { name: 'Editar' }));
+    await user.clear(screen.getByLabelText('Título'));
+    await user.type(screen.getByLabelText('Título'), 'La Tasquita');
+    await user.click(screen.getByRole('button', { name: 'Guardar' }));
+
+    expect(save).toHaveBeenCalledWith('bloque-1', {
+      title: 'La Tasquita',
+      description: 'Sin restaurante asignado',
+    });
+  });
+
+  it('cierra el formulario cuando el guardado va bien', async () => {
+    renderEditable(editingProps());
+    const user = userEvent.setup();
+
+    await user.click(screen.getByRole('button', { name: 'Editar' }));
+    await user.click(screen.getByRole('button', { name: 'Guardar' }));
+
+    await waitFor(() => expect(screen.queryByLabelText('Título')).toBeNull());
+  });
+
+  it('cancelar cierra el formulario sin guardar', async () => {
+    const save = vi.fn(async () => {});
+    renderEditable(editingProps({ save }));
+    const user = userEvent.setup();
+
+    await user.click(screen.getByRole('button', { name: 'Editar' }));
+    await user.type(screen.getByLabelText('Título'), 'algo');
+    await user.click(screen.getByRole('button', { name: 'Cancelar' }));
+
+    expect(save).not.toHaveBeenCalled();
+    expect(screen.queryByLabelText('Título')).toBeNull();
+  });
+
+  // Prueba obligatoria de la fase: un fallo al guardar avisa al usuario.
+  it('enseña el error si el guardado falla, y no cierra el formulario', async () => {
+    const save = vi.fn(() => Promise.reject(new Error('No hemos podido guardar el cambio.')));
+    renderEditable(editingProps({ save }));
+    const user = userEvent.setup();
+
+    await user.click(screen.getByRole('button', { name: 'Editar' }));
+    await user.click(screen.getByRole('button', { name: 'Guardar' }));
+
+    expect(await screen.findByText('No hemos podido guardar el cambio.')).toBeTruthy();
+    // El formulario sigue abierto: perder lo escrito sería el fallo B.5 otra vez.
+    expect(screen.getByLabelText('Título')).toBeTruthy();
+  });
+
+  describe('lo editado se distingue de lo original', () => {
+    const CON_EDICION = editingProps({
+      edits: [{ itemId: 'bloque-1', title: 'La Tasquita', updatedAt: '2026-08-08T12:00:00.000Z' }],
+    });
+
+    it('enseña el texto editado en vez del original', () => {
+      renderEditable(CON_EDICION);
+
+      expect(screen.getByText('La Tasquita')).toBeTruthy();
+      expect(screen.queryByText('Cena')).toBeNull();
+    });
+
+    // No basta con la cursiva: quien no distingue tipografías necesita el texto.
+    it('lo marca con un texto, no solo con un estilo', () => {
+      renderEditable(CON_EDICION);
+
+      expect(screen.getByText('Editado por ti')).toBeTruthy();
+    });
+
+    it('no marca como editado lo que nadie ha tocado', () => {
+      renderEditable(editingProps());
+
+      expect(screen.queryByText('Editado por ti')).toBeNull();
+      expect(screen.queryByRole('button', { name: 'Volver al original' })).toBeNull();
+    });
+
+    // Prueba obligatoria de la fase: se puede volver al original.
+    it('deja volver al original', async () => {
+      const revert = vi.fn(async () => {});
+      renderEditable(editingProps({ ...CON_EDICION, revert }));
+
+      await userEvent.setup().click(screen.getByRole('button', { name: 'Volver al original' }));
+
+      expect(revert).toHaveBeenCalledWith('bloque-1');
+    });
+
+    it('avisa si volver al original falla', async () => {
+      const revert = vi.fn(() => Promise.reject(new Error('No hemos podido deshacerlo.')));
+      renderEditable(editingProps({ ...CON_EDICION, revert }));
+
+      await userEvent.setup().click(screen.getByRole('button', { name: 'Volver al original' }));
+
+      expect(await screen.findByText('No hemos podido deshacerlo.')).toBeTruthy();
+    });
+
+    it('el formulario abre con el texto editado, no con el original', async () => {
+      renderEditable(CON_EDICION);
+
+      await userEvent.setup().click(screen.getByRole('button', { name: 'Editar' }));
+
+      expect((screen.getByLabelText('Título') as HTMLInputElement).value).toBe('La Tasquita');
+    });
+
+    it('solo marca el bloque editado, no todos', () => {
+      renderEditable(CON_EDICION, [ORIGINAL, item({ id: 'bloque-2', title: 'Visita' })]);
+
+      expect(screen.getAllByText('Editado por ti')).toHaveLength(1);
+    });
   });
 });

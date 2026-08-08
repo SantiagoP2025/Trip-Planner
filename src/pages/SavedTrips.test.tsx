@@ -32,6 +32,7 @@ function buildSavedTrip(overrides: Partial<SavedTrip> = {}): SavedTrip {
     destination: 'Lisboa',
     departureDate: '2026-09-10',
     returnDate: '2026-09-17',
+    edits: [],
     proposal: {
       id: 'recommended-1',
       type: 'recommended',
@@ -301,5 +302,161 @@ describe('Mis viajes guardados', () => {
       expect(await screen.findByRole('heading', { name: 'Lo que dice el servidor' })).toBeTruthy();
       expect(screen.queryByRole('heading', { name: 'Copia vieja' })).toBeNull();
     });
+  });
+});
+
+// Fase 11: la edición del itinerario, de extremo a extremo por la pantalla.
+describe('Mis viajes guardados — edición del itinerario', () => {
+  const BLOQUE = {
+    id: '2026-09-11-meal-dinner',
+    startTime: '2026-09-11T20:00:00.000Z',
+    endTime: '2026-09-11T21:30:00.000Z',
+    type: 'meal' as const,
+    title: 'Cena',
+    durationMinutes: 90,
+    verificationStatus: 'unverified' as const,
+  };
+
+  function tripConItinerario(edits: SavedTrip['edits'] = []): SavedTrip {
+    const base = buildSavedTrip();
+    return {
+      ...base,
+      edits,
+      proposal: {
+        ...base.proposal,
+        itinerary: [{ date: '2026-09-11', items: [BLOQUE] }],
+      },
+    };
+  }
+
+  function stubFetch(trip: SavedTrip, onEdit?: () => Response) {
+    const fetchMock = vi.fn(async (_url: string, init?: RequestInit) => {
+      if (init?.method === 'PUT') {
+        return (
+          onEdit?.() ??
+          jsonResponse({
+            requestId: 'r',
+            edit: {
+              itemId: BLOQUE.id,
+              title: 'La Tasquita',
+              updatedAt: '2026-08-08T12:00:00.000Z',
+            },
+          })
+        );
+      }
+      if (init?.method === 'DELETE') return jsonResponse({ requestId: 'r', itemId: BLOQUE.id });
+      return jsonResponse({ requestId: 'r', savedTrips: [trip] });
+    });
+    vi.stubGlobal('fetch', fetchMock);
+    return fetchMock;
+  }
+
+  // Regla 14: lo que el usuario escribe va contra el servidor, no a localStorage.
+  it('manda la edición al servidor con el token de la sesión', async () => {
+    const fetchMock = stubFetch(tripConItinerario());
+
+    renderSavedTrips(withSession());
+    const user = userEvent.setup();
+
+    await user.click(await screen.findByRole('button', { name: 'Editar' }));
+    await user.clear(screen.getByLabelText('Título'));
+    await user.type(screen.getByLabelText('Título'), 'La Tasquita');
+    await user.click(screen.getByRole('button', { name: 'Guardar' }));
+
+    await waitFor(() => {
+      const put = (fetchMock.mock.calls as unknown as [string, RequestInit][]).find(
+        ([, init]) => init?.method === 'PUT',
+      );
+      expect(put).toBeDefined();
+
+      const [url, init] = put as [string, RequestInit];
+      expect(url).toBe('/api/trips/itinerary-edits');
+      expect(JSON.parse(init.body as string)).toMatchObject({
+        savedTripId: 'guardado-1',
+        itemId: BLOQUE.id,
+        title: 'La Tasquita',
+      });
+      expect((init.headers as Record<string, string>).authorization).toBe(
+        `Bearer ${TEST_SESSION.accessToken}`,
+      );
+    });
+  });
+
+  it('marca el bloque como editado en cuanto el servidor confirma', async () => {
+    stubFetch(tripConItinerario());
+
+    renderSavedTrips(withSession());
+    const user = userEvent.setup();
+
+    await user.click(await screen.findByRole('button', { name: 'Editar' }));
+    await user.click(screen.getByRole('button', { name: 'Guardar' }));
+
+    expect(await screen.findByText('Editado por ti')).toBeTruthy();
+    expect(screen.getByText('La Tasquita')).toBeTruthy();
+  });
+
+  // La caché es una copia de lo que hay en el servidor: si se queda atrás, la
+  // edición aparece y desaparece al recargar.
+  it('actualiza también la copia local', async () => {
+    stubFetch(tripConItinerario());
+
+    renderSavedTrips(withSession());
+    const user = userEvent.setup();
+
+    await user.click(await screen.findByRole('button', { name: 'Editar' }));
+    await user.click(screen.getByRole('button', { name: 'Guardar' }));
+
+    await waitFor(() =>
+      expect(localStorage.getItem('trip-planner.saved-trips')).toContain('La Tasquita'),
+    );
+  });
+
+  // Prueba obligatoria de la fase: un fallo al guardar avisa al usuario.
+  it('avisa si el servidor rechaza la edición', async () => {
+    stubFetch(tripConItinerario(), () =>
+      jsonResponse(
+        { error: { code: 'INTERNAL_ERROR', message: 'No hemos podido guardarlo.', requestId: 'r' } },
+        500,
+      ),
+    );
+
+    renderSavedTrips(withSession());
+    const user = userEvent.setup();
+
+    await user.click(await screen.findByRole('button', { name: 'Editar' }));
+    await user.click(screen.getByRole('button', { name: 'Guardar' }));
+
+    expect(await screen.findByText('No hemos podido guardarlo.')).toBeTruthy();
+    expect(screen.queryByText('Editado por ti')).toBeNull();
+  });
+
+  // Prueba obligatoria de la fase: se puede volver al original.
+  it('deja volver al original y quita la marca', async () => {
+    stubFetch(
+      tripConItinerario([
+        { itemId: BLOQUE.id, title: 'La Tasquita', updatedAt: '2026-08-08T12:00:00.000Z' },
+      ]),
+    );
+
+    renderSavedTrips(withSession());
+    const user = userEvent.setup();
+
+    await user.click(await screen.findByRole('button', { name: 'Volver al original' }));
+
+    expect(await screen.findByText('Cena')).toBeTruthy();
+    expect(screen.queryByText('Editado por ti')).toBeNull();
+  });
+
+  it('enseña la edición guardada al cargar la lista', async () => {
+    stubFetch(
+      tripConItinerario([
+        { itemId: BLOQUE.id, title: 'La Tasquita', updatedAt: '2026-08-08T12:00:00.000Z' },
+      ]),
+    );
+
+    renderSavedTrips(withSession());
+
+    expect(await screen.findByText('La Tasquita')).toBeTruthy();
+    expect(screen.getByText('Editado por ti')).toBeTruthy();
   });
 });

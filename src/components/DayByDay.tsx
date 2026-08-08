@@ -1,7 +1,11 @@
-import { useMemo, useState } from 'react';
+import { useId, useMemo, useState, type FormEvent } from 'react';
 import { DayMap, hasCoordinates } from './DayMap.tsx';
 import { formatCurrency, formatDate, formatDuration, formatTime } from '../services/format.ts';
-import type { ItineraryDay, ItineraryItem, ItineraryItemType } from '../types/api.ts';
+import {
+  MAX_EDIT_DESCRIPTION_LENGTH,
+  MAX_EDIT_TITLE_LENGTH,
+} from '../../server/config/trip-limits.ts';
+import type { ItineraryDay, ItineraryEdit, ItineraryItem, ItineraryItemType } from '../types/api.ts';
 
 // Sección 12: el itinerario día a día, tal como lo devuelve el servidor.
 //
@@ -33,7 +37,158 @@ const TYPE_STYLES: Record<ItineraryItemType, string> = {
   free_time: 'bg-slate-100 text-slate-600',
 };
 
-function Item({ item, currency }: { item: ItineraryItem; currency: string }) {
+// Fase 11: lo que hace falta para poder editar. Ausente en la pantalla de
+// resultados, donde el viaje todavía no está guardado y por tanto no hay dónde
+// guardar lo que el usuario escriba (regla 14: contra el servidor o nada).
+export interface ItineraryEditing {
+  edits: readonly ItineraryEdit[];
+  save(itemId: string, fields: { title: string; description: string }): Promise<void>;
+  revert(itemId: string): Promise<void>;
+}
+
+type EditStatus = 'idle' | 'saving' | 'saved' | 'error';
+
+const inputClass =
+  'w-full rounded-md border border-slate-300 bg-white px-2 py-1 text-sm text-slate-900 ' +
+  'focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500';
+
+function ItemEditor({
+  item,
+  edit,
+  editing,
+  onClose,
+}: {
+  item: ItineraryItem;
+  edit: ItineraryEdit | undefined;
+  editing: ItineraryEditing;
+  onClose: () => void;
+}) {
+  const fieldId = useId();
+  // Se parte de lo que el usuario está viendo, no del original: si ya había
+  // editado el título, el formulario abre con su texto.
+  const [title, setTitle] = useState(edit?.title ?? item.title);
+  const [description, setDescription] = useState(edit?.description ?? item.description ?? '');
+  const [status, setStatus] = useState<EditStatus>('idle');
+  const [message, setMessage] = useState('');
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setStatus('saving');
+    setMessage('');
+
+    try {
+      await editing.save(item.id, { title, description });
+      onClose();
+    } catch (error) {
+      // Regla 15: el error se ve. Perder en silencio lo que alguien acaba de
+      // escribir es lo que hacía la versión anterior (fallo B.5), y el
+      // formulario se queda abierto para no perder el texto.
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : 'No hemos podido guardar el cambio. Inténtalo de nuevo.',
+      );
+      setStatus('error');
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="mt-2 flex flex-col gap-2">
+      <div>
+        <label htmlFor={`${fieldId}-title`} className="text-xs font-medium text-slate-700">
+          Título
+        </label>
+        <input
+          id={`${fieldId}-title`}
+          className={inputClass}
+          value={title}
+          onChange={(event) => setTitle(event.target.value)}
+          maxLength={MAX_EDIT_TITLE_LENGTH}
+        />
+      </div>
+
+      <div>
+        <label htmlFor={`${fieldId}-description`} className="text-xs font-medium text-slate-700">
+          Notas
+        </label>
+        <textarea
+          id={`${fieldId}-description`}
+          className={inputClass}
+          rows={2}
+          value={description}
+          onChange={(event) => setDescription(event.target.value)}
+          maxLength={MAX_EDIT_DESCRIPTION_LENGTH}
+        />
+      </div>
+
+      {message && (
+        <p role="alert" className="text-xs text-red-700">
+          {message}
+        </p>
+      )}
+
+      <div className="flex flex-wrap gap-2">
+        <button
+          type="submit"
+          disabled={status === 'saving'}
+          className="rounded-md bg-sky-600 px-3 py-1 text-xs font-medium text-white
+            hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-500 disabled:opacity-60"
+        >
+          {status === 'saving' ? 'Guardando…' : 'Guardar'}
+        </button>
+        <button
+          type="button"
+          onClick={onClose}
+          className="rounded-md border border-slate-300 px-3 py-1 text-xs text-slate-700
+            hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-sky-500"
+        >
+          Cancelar
+        </button>
+      </div>
+    </form>
+  );
+}
+
+function Item({
+  item,
+  currency,
+  edit,
+  editing,
+}: {
+  item: ItineraryItem;
+  currency: string;
+  edit?: ItineraryEdit;
+  editing?: ItineraryEditing;
+}) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [revertStatus, setRevertStatus] = useState<EditStatus>('idle');
+  const [revertMessage, setRevertMessage] = useState('');
+
+  // Lo que se enseña es la edición cuando existe, y el original cuando no.
+  // Elegir entre dos textos que manda el servidor no es generar datos: el
+  // original sigue intacto en `item`, que es lo que permite volver a él.
+  const title = edit?.title ?? item.title;
+  const isEdited = edit !== undefined;
+
+  async function handleRevert() {
+    if (!editing) return;
+
+    setRevertStatus('saving');
+    setRevertMessage('');
+
+    try {
+      await editing.revert(item.id);
+      setRevertStatus('idle');
+    } catch (error) {
+      setRevertMessage(
+        error instanceof Error
+          ? error.message
+          : 'No hemos podido volver al original. Inténtalo de nuevo.',
+      );
+      setRevertStatus('error');
+    }
+  }
+
   return (
     <li className="flex gap-3 py-2">
       <p className="w-24 shrink-0 tabular-nums text-sm text-slate-500">
@@ -47,7 +202,14 @@ function Item({ item, currency }: { item: ItineraryItem; currency: string }) {
           >
             {TYPE_LABELS[item.type]}
           </span>
-          <p className="font-medium text-slate-900">{item.title}</p>
+          <p className={`font-medium text-slate-900 ${isEdited ? 'italic' : ''}`}>{title}</p>
+          {/* Se distingue visualmente lo editado de lo original. No basta con la
+              cursiva: quien no distingue tipografías necesita el texto. */}
+          {isEdited && (
+            <span className="rounded-full bg-sky-100 px-2 py-0.5 text-xs font-medium text-sky-800">
+              Editado por ti
+            </span>
+          )}
         </div>
 
         <p className="mt-0.5 text-sm text-slate-600">
@@ -60,6 +222,13 @@ function Item({ item, currency }: { item: ItineraryItem; currency: string }) {
             ` · ${formatCurrency(item.costPerPerson, currency)} por persona`}
         </p>
 
+        {/* Solo la nota que ha escrito el usuario. La descripción original de una
+            visita es su categoría ("Museo"), que ya dice la etiqueta de arriba:
+            repetirla sería ruido, y no es algo que nadie haya escrito. */}
+        {edit?.description !== undefined && (
+          <p className="mt-0.5 text-sm text-slate-700">{edit.description}</p>
+        )}
+
         {item.bookingRequired && (
           <p className="mt-0.5 text-sm text-amber-800">Requiere reserva previa.</p>
         )}
@@ -71,12 +240,59 @@ function Item({ item, currency }: { item: ItineraryItem; currency: string }) {
             {item.notes?.join(' ') ?? 'Horario estimado, pendiente de confirmar.'}
           </p>
         )}
+
+        {editing && !isEditing && (
+          <div className="mt-1 flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setIsEditing(true)}
+              className="text-xs font-medium text-sky-700 underline hover:text-sky-900"
+            >
+              Editar
+            </button>
+
+            {isEdited && (
+              <button
+                type="button"
+                onClick={handleRevert}
+                disabled={revertStatus === 'saving'}
+                className="text-xs font-medium text-slate-600 underline hover:text-slate-900
+                  disabled:opacity-60"
+              >
+                {revertStatus === 'saving' ? 'Deshaciendo…' : 'Volver al original'}
+              </button>
+            )}
+
+            {revertMessage && (
+              <p role="alert" className="text-xs text-red-700">
+                {revertMessage}
+              </p>
+            )}
+          </div>
+        )}
+
+        {editing && isEditing && (
+          <ItemEditor
+            item={item}
+            edit={edit}
+            editing={editing}
+            onClose={() => setIsEditing(false)}
+          />
+        )}
       </div>
     </li>
   );
 }
 
-export function DayByDay({ days, currency }: { days: ItineraryDay[]; currency: string }) {
+export function DayByDay({
+  days,
+  currency,
+  editing,
+}: {
+  days: ItineraryDay[];
+  currency: string;
+  editing?: ItineraryEditing;
+}) {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
   // El día elegido, o el primero mientras no se haya elegido ninguno. Se resuelve
@@ -90,6 +306,13 @@ export function DayByDay({ days, currency }: { days: ItineraryDay[]; currency: s
   const stops = useMemo(
     () => (selectedDay?.items ?? []).filter(hasCoordinates),
     [selectedDay],
+  );
+
+  // Regla 6 de CLAUDE.md: las ediciones se indexan una vez, y no se recorre la
+  // lista entera dentro del bucle que pinta cada bloque del día.
+  const editsByItemId = useMemo(
+    () => new Map((editing?.edits ?? []).map((edit) => [edit.itemId, edit])),
+    [editing?.edits],
   );
 
   if (days.length === 0 || !selectedDay) return null;
@@ -131,7 +354,13 @@ export function DayByDay({ days, currency }: { days: ItineraryDay[]; currency: s
         ) : (
           <ul className="mt-1 divide-y divide-slate-100">
             {selectedDay.items.map((item) => (
-              <Item key={item.id} item={item} currency={currency} />
+              <Item
+                key={item.id}
+                item={item}
+                currency={currency}
+                edit={editsByItemId.get(item.id)}
+                editing={editing}
+              />
             ))}
           </ul>
         )}

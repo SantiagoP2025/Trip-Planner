@@ -1,4 +1,4 @@
-import type { SavedTrip } from './saved-trip.ts';
+import type { ItineraryEdit, SavedTrip } from './saved-trip.ts';
 import type { TripProposal, ValidationError } from './trip.ts';
 
 // Sección 16.1: códigos que devuelve la API. Cada uno se traduce a un estado
@@ -66,6 +66,19 @@ export interface SaveTripResponseBody {
 export interface DeleteSavedTripResponseBody {
   requestId: string;
   deletedId: string;
+}
+
+// Fase 11. `edit` viene a `null` cuando lo que se mandó no cambiaba nada
+// respecto al original: la operación fue una vuelta al original, y el frontend
+// tiene que quitar la marca de "editado" en vez de suponer que se guardó.
+export interface ItineraryEditResponseBody {
+  requestId: string;
+  edit: ItineraryEdit | null;
+}
+
+export interface DeleteItineraryEditResponseBody {
+  requestId: string;
+  itemId: string;
 }
 
 // Fase 8. Configuración de ejecución que el navegador necesita para hablar con

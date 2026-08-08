@@ -2,19 +2,17 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { SessionResult, SessionVerifier } from '../auth/session.ts';
 import { MAX_REQUEST_BODY_BYTES } from '../config/limits.ts';
 import { MAX_SAVED_TRIPS_PER_USER } from '../config/trip-limits.ts';
-import type {
-  NewSavedTrip,
-  SavedTripRepository,
-  TripRequestOwnership,
-} from '../repositories/saved-trip.repository.ts';
+import type { SavedTripRepository } from '../repositories/saved-trip.repository.ts';
+import {
+  buildSavedTrip as savedTrip,
+  FakeSavedTripRepository,
+} from '../repositories/test-fixtures.ts';
 import type {
   ApiErrorBody,
   DeleteSavedTripResponseBody,
   SaveTripResponseBody,
   SavedTripsResponseBody,
 } from '../types/api.ts';
-import type { SavedTrip } from '../types/saved-trip.ts';
-import type { ProposalType, TripProposal } from '../types/trip.ts';
 import { createSavedTripsHandler } from './handle-saved-trips.ts';
 import { FixedWindowRateLimiter, type RateLimiter } from './rate-limit.ts';
 
@@ -32,74 +30,6 @@ beforeEach(() => {
 afterEach(() => {
   vi.restoreAllMocks();
 });
-
-function savedTrip(overrides: Partial<SavedTrip> = {}): SavedTrip {
-  return {
-    id: SAVED_ID,
-    title: 'Valencia → Lisboa',
-    savedAt: '2026-08-08T10:00:00.000Z',
-    tripRequestId: TRIP_ID,
-    origin: 'Valencia',
-    destination: 'Lisboa',
-    departureDate: '2026-09-10',
-    returnDate: '2026-09-17',
-    proposal: { id: 'recommended-1', type: 'recommended' } as unknown as TripProposal,
-    ...overrides,
-  };
-}
-
-// Doble del repositorio: registra lo que se le pide y devuelve lo que le digan.
-// Lo que se comprueba aquí es la decisión del handler —quién puede hacer qué y
-// con qué código— no el SQL, que vive en el repositorio de Supabase.
-class FakeSavedTripRepository implements SavedTripRepository {
-  tripRequest: TripRequestOwnership | null = {
-    userId: USER.id,
-    origin: 'Valencia',
-    destination: 'Lisboa',
-    departureDate: '2026-09-10',
-    returnDate: '2026-09-17',
-  };
-  proposalId: string | null = 'propuesta-1';
-  existingSavedId: string | null = null;
-  count = 0;
-  trips: SavedTrip[] = [];
-  deleted = true;
-
-  readonly savedRecords: NewSavedTrip[] = [];
-  readonly listedFor: { userId: string; limit: number }[] = [];
-  readonly deleteCalls: { savedTripId: string; userId: string }[] = [];
-
-  async findTripRequest(_tripRequestId: string): Promise<TripRequestOwnership | null> {
-    return this.tripRequest;
-  }
-
-  async findProposalId(_tripRequestId: string, _type: ProposalType): Promise<string | null> {
-    return this.proposalId;
-  }
-
-  async findSavedTripId(_userId: string, _tripProposalId: string): Promise<string | null> {
-    return this.existingSavedId;
-  }
-
-  async countByUser(_userId: string): Promise<number> {
-    return this.count;
-  }
-
-  async save(record: NewSavedTrip): Promise<SavedTrip> {
-    this.savedRecords.push(record);
-    return savedTrip({ title: record.title });
-  }
-
-  async listByUser(userId: string, limit: number): Promise<SavedTrip[]> {
-    this.listedFor.push({ userId, limit });
-    return this.trips;
-  }
-
-  async deleteById(savedTripId: string, userId: string): Promise<boolean> {
-    this.deleteCalls.push({ savedTripId, userId });
-    return this.deleted;
-  }
-}
 
 function verifierReturning(result: SessionResult): SessionVerifier {
   return { verify: async () => result };

@@ -1,4 +1,4 @@
-import type { SavedTrip } from '../types/saved-trip.ts';
+import type { ItineraryEdit, SavedTrip } from '../types/saved-trip.ts';
 import type { TripProposal } from '../types/trip.ts';
 import type { NewSavedTrip } from './saved-trip.repository.ts';
 
@@ -86,5 +86,38 @@ export function toSavedTrip(row: unknown): SavedTrip | null {
     departureDate,
     returnDate,
     proposal: data as TripProposal,
+    // Fase 11: las ediciones viajan aparte de la propuesta, sin aplicarse
+    // encima. El frontend necesita las dos versiones para marcar lo editado y
+    // ofrecer volver al original.
+    edits: toItineraryEdits(record.saved_trip_edits),
   };
+}
+
+// Una edición sin identificador de elemento, o sin ningún texto, no se puede
+// pintar ni deshacer: se descarta en vez de arrastrarla hasta la pantalla.
+export function toItineraryEdits(value: unknown): ItineraryEdit[] {
+  if (!Array.isArray(value)) return [];
+
+  const edits: ItineraryEdit[] = [];
+
+  for (const row of value) {
+    const record = firstOf(row);
+    if (!record) continue;
+
+    const itemId = asString(record.item_id);
+    if (!itemId) continue;
+
+    const title = asString(record.title);
+    const description = asString(record.description);
+    if (!title && !description) continue;
+
+    edits.push({
+      itemId,
+      ...(title ? { title } : {}),
+      ...(description ? { description } : {}),
+      updatedAt: asString(record.updated_at) ?? '',
+    });
+  }
+
+  return edits;
 }

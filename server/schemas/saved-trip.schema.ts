@@ -46,8 +46,9 @@ export type SchemaValidationResult<T> =
   | { success: false; errors: ValidationError[] };
 
 // Mismo formato de error que `validateTripRequest`: un `ValidationError` por
-// incidencia, con la ruta del campo en español (sección 16.1).
-function toResult<T>(
+// incidencia, con la ruta del campo en español (sección 16.1). Compartido con
+// los demás esquemas para que todos los endpoints contesten igual.
+export function toValidationResult<T>(
   result: { success: true; data: T } | { success: false; error: z.ZodError },
 ): SchemaValidationResult<T> {
   if (result.success) {
@@ -64,11 +65,11 @@ function toResult<T>(
 }
 
 export function validateSaveTrip(input: unknown): SchemaValidationResult<SaveTripInput> {
-  return toResult(saveTripSchema.safeParse(input));
+  return toValidationResult(saveTripSchema.safeParse(input));
 }
 
 export function validateDeleteSavedTrip(
   input: unknown,
 ): SchemaValidationResult<{ id: string }> {
-  return toResult(deleteSavedTripSchema.safeParse(input));
+  return toValidationResult(deleteSavedTripSchema.safeParse(input));
 }

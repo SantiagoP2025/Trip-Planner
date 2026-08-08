@@ -1,4 +1,4 @@
-import { DayByDay } from './DayByDay.tsx';
+import { DayByDay, type ItineraryEditing } from './DayByDay.tsx';
 import {
   formatCurrency,
   formatDateTime,
@@ -44,7 +44,16 @@ function FlightLeg({ label, segments }: { label: string; segments: FlightSegment
   );
 }
 
-export function ProposalCard({ proposal }: { proposal: TripProposal }) {
+// `editing` solo llega desde la pantalla de viajes guardados: sin viaje guardado
+// no hay dónde guardar lo que el usuario escriba, y la fase 11 depende de la 8
+// justamente por eso.
+export function ProposalCard({
+  proposal,
+  editing,
+}: {
+  proposal: TripProposal;
+  editing?: ItineraryEditing;
+}) {
   const { flight, accommodation, budget } = proposal;
 
   return (
@@ -147,7 +156,7 @@ export function ProposalCard({ proposal }: { proposal: TripProposal }) {
           proveedor de rutas no hay tiempos de desplazamiento reales— y se dice,
           en vez de rellenarlo con humo. */}
       {proposal.itinerary.length > 0 ? (
-        <DayByDay days={proposal.itinerary} currency={proposal.currency} />
+        <DayByDay days={proposal.itinerary} currency={proposal.currency} editing={editing} />
       ) : (
         <p className="mt-4 text-xs text-slate-500">
           No hemos podido preparar el itinerario día a día de esta propuesta.
