@@ -1,5 +1,5 @@
-import type { ProposalType, TripScoreBreakdown } from '../types/trip.ts';
-import { calculateRange, clampScore, normalizeLowerIsBetter, roundScore, type ValueRange } from './normalize-score.ts';
+import type { ProposalType, TripScoreBreakdown } from '../types/trip.js';
+import { calculateRange, clampScore, normalizeLowerIsBetter, roundScore, type ValueRange } from './normalize-score.js';
 
 export interface TripScoreWeights {
   price: number;

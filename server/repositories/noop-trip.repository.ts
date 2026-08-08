@@ -1,4 +1,4 @@
-import type { TripRepository } from './trip.repository.ts';
+import type { TripRepository } from './trip.repository.js';
 
 // Implementación para cuando Supabase no está configurado: no guarda nada y no
 // se queja. Sostiene el criterio de la fase 6 —"si la base de datos falla, el

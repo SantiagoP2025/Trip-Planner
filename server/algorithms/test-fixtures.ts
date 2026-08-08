@@ -1,6 +1,6 @@
-import type { AccommodationOffer } from '../types/accommodation.ts';
-import type { FlightOffer, FlightSegment } from '../types/flight.ts';
-import type { ItineraryItem } from '../types/itinerary.ts';
+import type { AccommodationOffer } from '../types/accommodation.js';
+import type { FlightOffer, FlightSegment } from '../types/flight.js';
+import type { ItineraryItem } from '../types/itinerary.js';
 
 // Constructores de ofertas para las pruebas de los algoritmos. Solo lo usan los
 // ficheros *.test.ts: el código de producción recibe estas ofertas de los

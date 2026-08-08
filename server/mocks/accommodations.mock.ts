@@ -1,7 +1,7 @@
-import type { AccommodationOffer } from '../types/accommodation.ts';
-import type { AccommodationSearchRequest } from '../types/provider.ts';
-import { randomBoolean, randomFloat, randomInt, randomItem } from './prng.ts';
-import { deriveBaseCoordinate, jitterCoordinate } from './geo.ts';
+import type { AccommodationOffer } from '../types/accommodation.js';
+import type { AccommodationSearchRequest } from '../types/provider.js';
+import { randomBoolean, randomFloat, randomInt, randomItem } from './prng.js';
+import { deriveBaseCoordinate, jitterCoordinate } from './geo.js';
 
 const NAME_PREFIXES = ['Hotel', 'Apartamentos', 'Hostal', 'Residencia', 'Suites', 'Posada'];
 const NAME_QUALIFIERS = ['Central', 'del Puerto', 'Plaza Mayor', 'Vista', 'Real', 'del Parque', 'Jardín', 'Terraza'];

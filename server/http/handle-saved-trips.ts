@@ -1,19 +1,19 @@
-import { readBearerToken, type SessionVerifier, type AuthenticatedUser } from '../auth/session.ts';
-import { MAX_SAVED_TRIPS_PER_USER } from '../config/trip-limits.ts';
-import { defaultSavedTripTitle } from '../repositories/saved-trip-rows.ts';
-import type { SavedTripRepository } from '../repositories/saved-trip.repository.ts';
-import { validateDeleteSavedTrip, validateSaveTrip } from '../schemas/saved-trip.schema.ts';
+import { readBearerToken, type SessionVerifier, type AuthenticatedUser } from '../auth/session.js';
+import { MAX_SAVED_TRIPS_PER_USER } from '../config/trip-limits.js';
+import { defaultSavedTripTitle } from '../repositories/saved-trip-rows.js';
+import type { SavedTripRepository } from '../repositories/saved-trip.repository.js';
+import { validateDeleteSavedTrip, validateSaveTrip } from '../schemas/saved-trip.schema.js';
 import type {
   DeleteSavedTripResponseBody,
   SaveTripResponseBody,
   SavedTripsResponseBody,
-} from '../types/api.ts';
-import type { RequestHandler } from './handler.ts';
-import { logError, logRequest } from './logger.ts';
-import { messageForJsonBodyFailure, readJsonBody } from './read-json-body.ts';
-import { rateLimitHeaders, type RateLimiter } from './rate-limit.ts';
-import { createRequestId, resolveClientIp } from './request-context.ts';
-import { errorResponse, jsonResponse } from './responses.ts';
+} from '../types/api.js';
+import type { RequestHandler } from './handler.js';
+import { logError, logRequest } from './logger.js';
+import { messageForJsonBodyFailure, readJsonBody } from './read-json-body.js';
+import { rateLimitHeaders, type RateLimiter } from './rate-limit.js';
+import { createRequestId, resolveClientIp } from './request-context.js';
+import { errorResponse, jsonResponse } from './responses.js';
 
 // Fase 8: GET, POST y DELETE de /api/trips/saved.
 //

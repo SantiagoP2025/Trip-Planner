@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { RouteMatrixRequest } from '../types/provider.ts';
-import { MockRoutesProvider } from './mock-routes.provider.ts';
+import type { RouteMatrixRequest } from '../types/provider.js';
+import { MockRoutesProvider } from './mock-routes.provider.js';
 
 const pointA = { id: 'a', latitude: 40.4168, longitude: -3.7038 };
 const pointB = { id: 'b', latitude: 40.42, longitude: -3.71 };

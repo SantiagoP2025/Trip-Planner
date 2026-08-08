@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { MAX_REQUEST_BODY_BYTES } from '../config/limits.ts';
-import { readJsonBody } from './read-json-body.ts';
+import { MAX_REQUEST_BODY_BYTES } from '../config/limits.js';
+import { readJsonBody } from './read-json-body.js';
 
 function jsonRequest(body: string, headers: Record<string, string> = {}): Request {
   return new Request('https://ejemplo.test/api/trips/generate', {

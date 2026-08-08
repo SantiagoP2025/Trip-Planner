@@ -6,9 +6,15 @@
     "types": ["node"],
     "skipLibCheck": true,
 
-    /* Bundler mode */
+    /* Node ESM: es lo que ejecuta Vercel, no un empaquetador */
     "module": "nodenext",
-    "allowImportingTsExtensions": true,
+    // A propósito sin `allowImportingTsExtensions`: los imports relativos de
+    // `server/` y `api/` tienen que escribirse con extensión `.js` (la del
+    // fichero compilado), no `.ts`. Vercel transpila cada fichero y lo ejecuta
+    // con Node a pelo, sin resolutor de TypeScript, así que un `'./limits.ts'`
+    // compila y funciona en local —Vite sí lo resuelve— pero en producción
+    // busca un fichero que allí no existe y la función devuelve 500 con
+    // ERR_MODULE_NOT_FOUND. Sin este flag, `tsc -b` lo rechaza antes.
     "verbatimModuleSyntax": true,
     "moduleDetection": "force",
     "noEmit": true,

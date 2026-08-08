@@ -2,9 +2,9 @@ import { z } from 'zod';
 import {
   MAX_EDIT_DESCRIPTION_LENGTH,
   MAX_EDIT_TITLE_LENGTH,
-} from '../config/trip-limits.ts';
-import type { SchemaValidationResult } from './saved-trip.schema.ts';
-import { toValidationResult } from './saved-trip.schema.ts';
+} from '../config/trip-limits.js';
+import type { SchemaValidationResult } from './saved-trip.schema.js';
+import { toValidationResult } from './saved-trip.schema.js';
 
 // Regla 5 de CLAUDE.md: toda entrada del usuario pasa por Zod en el servidor,
 // con límites explícitos por campo. Estos textos son de los pocos sitios de la

@@ -1,8 +1,8 @@
-import type { AccommodationOffer } from '../types/accommodation.ts';
-import type { AccommodationSearchRequest } from '../types/provider.ts';
-import { generateAccommodationOffers } from '../mocks/accommodations.mock.ts';
-import { createSeededRandom } from '../mocks/prng.ts';
-import type { AccommodationProvider } from './accommodation.provider.ts';
+import type { AccommodationOffer } from '../types/accommodation.js';
+import type { AccommodationSearchRequest } from '../types/provider.js';
+import { generateAccommodationOffers } from '../mocks/accommodations.mock.js';
+import { createSeededRandom } from '../mocks/prng.js';
+import type { AccommodationProvider } from './accommodation.provider.js';
 
 function buildSeed(request: AccommodationSearchRequest): string {
   return [

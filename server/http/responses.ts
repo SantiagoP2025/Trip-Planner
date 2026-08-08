@@ -1,5 +1,5 @@
-import type { ApiErrorBody, ApiErrorCode } from '../types/api.ts';
-import type { ValidationError } from '../types/trip.ts';
+import type { ApiErrorBody, ApiErrorCode } from '../types/api.js';
+import type { ValidationError } from '../types/trip.js';
 
 // Sección 16.1: la tabla de códigos HTTP de la especificación.
 //

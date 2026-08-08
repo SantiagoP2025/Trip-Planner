@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import type { TripScoreBreakdown } from '../types/trip.ts';
+import type { TripScoreBreakdown } from '../types/trip.js';
 import {
   DEFAULT_TRIP_SCORE_WEIGHTS,
   PROFILE_SCORE_WEIGHTS,
   buildTripScoringContext,
   calculateTripScore,
   rescoreForProfile,
-} from './score-trip.ts';
+} from './score-trip.js';
 
 const context = buildTripScoringContext([800, 1200, 1600]);
 

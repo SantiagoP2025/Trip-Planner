@@ -1,4 +1,4 @@
-import { RATE_LIMIT_MAX_TRACKED_KEYS, type RateLimitPolicy } from '../config/limits.ts';
+import { RATE_LIMIT_MAX_TRACKED_KEYS, type RateLimitPolicy } from '../config/limits.js';
 
 export interface RateLimitDecision {
   allowed: boolean;

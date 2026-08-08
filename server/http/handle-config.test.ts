@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { ApiErrorBody, RuntimeConfigResponseBody } from '../types/api.ts';
-import { createConfigHandler } from './handle-config.ts';
-import { FixedWindowRateLimiter, type RateLimiter } from './rate-limit.ts';
+import type { ApiErrorBody, RuntimeConfigResponseBody } from '../types/api.js';
+import { createConfigHandler } from './handle-config.js';
+import { FixedWindowRateLimiter, type RateLimiter } from './rate-limit.js';
 
 const CONFIGURED = {
   SUPABASE_URL: 'https://proyecto.supabase.co',

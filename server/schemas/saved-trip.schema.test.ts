@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { MAX_SAVED_TRIP_TITLE_LENGTH } from '../config/trip-limits.ts';
-import { validateDeleteSavedTrip, validateSaveTrip } from './saved-trip.schema.ts';
+import { MAX_SAVED_TRIP_TITLE_LENGTH } from '../config/trip-limits.js';
+import { validateDeleteSavedTrip, validateSaveTrip } from './saved-trip.schema.js';
 
 const TRIP_ID = '3f1a5a1e-8b1a-4a4e-9a4c-0f0b2d3e4a5b';
 

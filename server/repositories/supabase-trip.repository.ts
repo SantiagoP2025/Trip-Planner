@@ -1,11 +1,11 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
-import type { SupabaseServerConfig } from '../config/env.ts';
+import type { SupabaseServerConfig } from '../config/env.js';
 import type {
   NewTripRequest,
   TripGenerationOutcome,
   TripRepository,
-} from './trip.repository.ts';
-import { toProviderSearchRows, toTripProposalRows, toTripRequestRow } from './trip-rows.ts';
+} from './trip.repository.js';
+import { toProviderSearchRows, toTripProposalRows, toTripRequestRow } from './trip-rows.js';
 
 // Sección 13: implementación de TripRepository contra Supabase.
 //

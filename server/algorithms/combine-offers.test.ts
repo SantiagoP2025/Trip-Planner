@@ -5,8 +5,8 @@ import {
   combineOffers,
   takeTopN,
   type ScoredOffer,
-} from './combine-offers.ts';
-import { buildAccommodation, buildFlight } from './test-fixtures.ts';
+} from './combine-offers.js';
+import { buildAccommodation, buildFlight } from './test-fixtures.js';
 
 function scoredFlights(count: number): ScoredOffer<ReturnType<typeof buildFlight>>[] {
   return Array.from({ length: count }, (_, index) => ({

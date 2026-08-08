@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { RouteMatrixEntry } from '../types/provider.ts';
-import { calculateTravelMatrix, DEFAULT_TRANSPORT_MODE } from './travel-matrix.ts';
+import type { RouteMatrixEntry } from '../types/provider.js';
+import { calculateTravelMatrix, DEFAULT_TRANSPORT_MODE } from './travel-matrix.js';
 
 function entry(
   originId: string,

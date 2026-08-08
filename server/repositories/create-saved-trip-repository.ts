@@ -1,13 +1,13 @@
-import { readSupabaseConfig, type SupabaseConfigResult } from '../config/env.ts';
-import type { ItineraryEdit, SavedTrip } from '../types/saved-trip.ts';
-import type { ProposalType } from '../types/trip.ts';
+import { readSupabaseConfig, type SupabaseConfigResult } from '../config/env.js';
+import type { ItineraryEdit, SavedTrip } from '../types/saved-trip.js';
+import type { ProposalType } from '../types/trip.js';
 import type {
   NewSavedTrip,
   SavedTripRepository,
   TripRequestOwnership,
-} from './saved-trip.repository.ts';
-import { createSupabaseClient } from './supabase-trip.repository.ts';
-import { SupabaseSavedTripRepository } from './supabase-saved-trip.repository.ts';
+} from './saved-trip.repository.js';
+import { createSupabaseClient } from './supabase-trip.repository.js';
+import { SupabaseSavedTripRepository } from './supabase-saved-trip.repository.js';
 
 // Único sitio donde se decide contra qué se guardan los viajes del usuario,
 // igual que `create-trip-repository.ts` para las generaciones.

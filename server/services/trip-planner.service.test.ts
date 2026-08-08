@@ -1,26 +1,26 @@
 import { describe, expect, it } from 'vitest';
-import { buildAccommodation, buildFlight } from '../algorithms/test-fixtures.ts';
+import { buildAccommodation, buildFlight } from '../algorithms/test-fixtures.js';
 import {
   DEFAULT_TOP_ACCOMMODATIONS,
   DEFAULT_TOP_FLIGHTS,
-} from '../algorithms/combine-offers.ts';
-import { MockAccommodationProvider } from '../providers/mock-accommodation.provider.ts';
-import { MockFlightProvider } from '../providers/mock-flight.provider.ts';
-import { MockPlacesProvider } from '../providers/mock-places.provider.ts';
-import { MockRoutesProvider } from '../providers/mock-routes.provider.ts';
-import type { AccommodationProvider } from '../providers/accommodation.provider.ts';
-import type { FlightProvider } from '../providers/flight.provider.ts';
-import type { PlacesProvider } from '../providers/places.provider.ts';
-import type { AccommodationOffer } from '../types/accommodation.ts';
-import type { ActivityCandidate } from '../types/activity.ts';
-import type { FlightOffer } from '../types/flight.ts';
-import type { PreferenceProfile } from '../types/common.ts';
-import type { TripRequest } from '../types/trip.ts';
+} from '../algorithms/combine-offers.js';
+import { MockAccommodationProvider } from '../providers/mock-accommodation.provider.js';
+import { MockFlightProvider } from '../providers/mock-flight.provider.js';
+import { MockPlacesProvider } from '../providers/mock-places.provider.js';
+import { MockRoutesProvider } from '../providers/mock-routes.provider.js';
+import type { AccommodationProvider } from '../providers/accommodation.provider.js';
+import type { FlightProvider } from '../providers/flight.provider.js';
+import type { PlacesProvider } from '../providers/places.provider.js';
+import type { AccommodationOffer } from '../types/accommodation.js';
+import type { ActivityCandidate } from '../types/activity.js';
+import type { FlightOffer } from '../types/flight.js';
+import type { PreferenceProfile } from '../types/common.js';
+import type { TripRequest } from '../types/trip.js';
 import {
   generateTripProposals,
   TripProviderError,
   type TripPlannerProviders,
-} from './trip-planner.service.ts';
+} from './trip-planner.service.js';
 
 const FIXED_CLOCK = () => new Date('2026-08-07T10:00:00.000Z');
 

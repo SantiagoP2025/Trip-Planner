@@ -1,12 +1,12 @@
 import { describe, expect, it, vi } from 'vitest';
-import { NoopTripRepository } from '../repositories/noop-trip.repository.ts';
+import { NoopTripRepository } from '../repositories/noop-trip.repository.js';
 import type {
   NewTripRequest,
   TripGenerationOutcome,
   TripRepository,
-} from '../repositories/trip.repository.ts';
-import type { PreferenceProfile } from '../types/common.ts';
-import { BestEffortTripPersistence } from './trip-persistence.service.ts';
+} from '../repositories/trip.repository.js';
+import type { PreferenceProfile } from '../types/common.js';
+import { BestEffortTripPersistence } from './trip-persistence.service.js';
 
 const PREFERENCES: PreferenceProfile = {
   beach: 1,

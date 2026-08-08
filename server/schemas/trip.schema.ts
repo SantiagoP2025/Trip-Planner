@@ -11,9 +11,9 @@ import {
   MIN_ADULTS,
   MIN_CHILDREN,
   MIN_TEXT_LENGTH,
-} from '../config/trip-limits.ts';
-import type { PreferenceLevel } from '../types/common.ts';
-import type { ValidationError } from '../types/trip.ts';
+} from '../config/trip-limits.js';
+import type { PreferenceLevel } from '../types/common.js';
+import type { ValidationError } from '../types/trip.js';
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 const TIME_OF_DAY_PATTERN = /^([01]\d|2[0-3]):[0-5]\d$/;

@@ -1,4 +1,4 @@
-import type { VerificationStatus } from './common.ts';
+import type { VerificationStatus } from './common.js';
 
 // Sección 12.2: elemento de itinerario. El horario final lo calcula el backend
 // mediante reglas y datos de rutas, nunca la IA directamente (sección 12).

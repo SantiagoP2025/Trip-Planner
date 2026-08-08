@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { tripRequestSchema, validateTripRequest } from './trip.schema.ts';
+import { tripRequestSchema, validateTripRequest } from './trip.schema.js';
 
 function toDateOnly(date: Date): string {
   return date.toISOString().slice(0, 10);

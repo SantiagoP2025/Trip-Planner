@@ -10,7 +10,7 @@ import {
   minutesBetween,
   minutesOfDay,
   parseTimeOfDay,
-} from './time.ts';
+} from './time.js';
 
 describe('addMinutes', () => {
   it('suma minutos', () => {

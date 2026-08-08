@@ -1,10 +1,10 @@
-import type { AccommodationOffer } from '../types/accommodation.ts';
-import type { OpeningPeriod } from '../types/common.ts';
-import type { FlightOffer } from '../types/flight.ts';
-import type { ItineraryItem } from '../types/itinerary.ts';
-import type { BudgetBreakdown, TripScoreBreakdown } from '../types/trip.ts';
-import { calculateUsableHours } from './score-flight.ts';
-import { checkOpeningHours, detectOverlaps } from './schedule-itinerary.ts';
+import type { AccommodationOffer } from '../types/accommodation.js';
+import type { OpeningPeriod } from '../types/common.js';
+import type { FlightOffer } from '../types/flight.js';
+import type { ItineraryItem } from '../types/itinerary.js';
+import type { BudgetBreakdown, TripScoreBreakdown } from '../types/trip.js';
+import { calculateUsableHours } from './score-flight.js';
+import { checkOpeningHours, detectOverlaps } from './schedule-itinerary.js';
 
 // Sección 10.4: una media alta no debe ocultar una deficiencia grave.
 export const MINIMUM_SCORES = {

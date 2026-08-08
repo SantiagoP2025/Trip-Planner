@@ -1,23 +1,23 @@
-import { readBearerToken, type SessionVerifier } from '../auth/session.ts';
-import { NoopTripRepository } from '../repositories/noop-trip.repository.ts';
-import { validateTripRequest, type TripRequestInput } from '../schemas/trip.schema.ts';
+import { readBearerToken, type SessionVerifier } from '../auth/session.js';
+import { NoopTripRepository } from '../repositories/noop-trip.repository.js';
+import { validateTripRequest, type TripRequestInput } from '../schemas/trip.schema.js';
 import {
   BestEffortTripPersistence,
   type TripPersistence,
-} from '../services/trip-persistence.service.ts';
+} from '../services/trip-persistence.service.js';
 import {
   generateTripProposals,
   TripProviderError,
   type TripPlannerProviders,
-} from '../services/trip-planner.service.ts';
-import type { GenerateTripResponseBody } from '../types/api.ts';
-import type { TripRequest } from '../types/trip.ts';
-import { logError, logGenerationDiagnostics, logRequest } from './logger.ts';
-import { messageForJsonBodyFailure, readJsonBody } from './read-json-body.ts';
-import { rateLimitHeaders, type RateLimiter } from './rate-limit.ts';
-import { createRequestId, resolveClientIp } from './request-context.ts';
-import { errorResponse, jsonResponse } from './responses.ts';
-import type { RequestHandler } from './handler.ts';
+} from '../services/trip-planner.service.js';
+import type { GenerateTripResponseBody } from '../types/api.js';
+import type { TripRequest } from '../types/trip.js';
+import { logError, logGenerationDiagnostics, logRequest } from './logger.js';
+import { messageForJsonBodyFailure, readJsonBody } from './read-json-body.js';
+import { rateLimitHeaders, type RateLimiter } from './rate-limit.js';
+import { createRequestId, resolveClientIp } from './request-context.js';
+import { errorResponse, jsonResponse } from './responses.js';
+import type { RequestHandler } from './handler.js';
 
 // Sección 7.2: POST /api/trips/generate. Valida, ejecuta y responde.
 //

@@ -1,4 +1,4 @@
-import type { FlightOffer } from '../types/flight.ts';
+import type { FlightOffer } from '../types/flight.js';
 import {
   calculateRange,
   clampScore,
@@ -6,7 +6,7 @@ import {
   normalizeLowerIsBetter,
   roundScore,
   type ValueRange,
-} from './normalize-score.ts';
+} from './normalize-score.js';
 
 // Sección 11.2: pesos orientativos de la puntuación de vuelo.
 export const FLIGHT_SCORE_WEIGHTS = {

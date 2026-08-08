@@ -1,6 +1,6 @@
-import type { ActivityCandidate } from '../types/activity.ts';
-import type { OpeningPeriod } from '../types/common.ts';
-import type { ItineraryItem } from '../types/itinerary.ts';
+import type { ActivityCandidate } from '../types/activity.js';
+import type { OpeningPeriod } from '../types/common.js';
+import type { ItineraryItem } from '../types/itinerary.js';
 import {
   addMinutes,
   atTimeOfDay,
@@ -10,8 +10,8 @@ import {
   minutesOfDay,
   MINUTES_PER_DAY,
   parseTimeOfDay,
-} from './time.ts';
-import type { TravelMatrix } from './travel-matrix.ts';
+} from './time.js';
+import type { TravelMatrix } from './travel-matrix.js';
 
 // Sección 12.3: las funciones que convierten una lista de lugares en un horario.
 //

@@ -1,8 +1,8 @@
-import type { ActivityCandidate } from '../types/activity.ts';
-import type { ActivitySearchRequest } from '../types/provider.ts';
-import { generateActivityCandidates } from '../mocks/activities.mock.ts';
-import { createSeededRandom } from '../mocks/prng.ts';
-import type { PlacesProvider } from './places.provider.ts';
+import type { ActivityCandidate } from '../types/activity.js';
+import type { ActivitySearchRequest } from '../types/provider.js';
+import { generateActivityCandidates } from '../mocks/activities.mock.js';
+import { createSeededRandom } from '../mocks/prng.js';
+import type { PlacesProvider } from './places.provider.js';
 
 function buildSeed(request: ActivitySearchRequest): string {
   return [request.destination, request.limit ?? ''].join('|');

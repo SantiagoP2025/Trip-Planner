@@ -2,8 +2,8 @@ import type {
   NewTripRequest,
   TripGenerationOutcome,
   TripRepository,
-} from '../repositories/trip.repository.ts';
-import { withinTimeout } from './with-timeout.ts';
+} from '../repositories/trip.repository.js';
+import { withinTimeout } from './with-timeout.js';
 
 // Criterio de la fase 6: la persistencia es best-effort. Si la base de datos
 // falla, el viaje se genera igual.

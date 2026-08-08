@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createSeededRandom, randomFloat, randomInt, randomItem } from './prng.ts';
+import { createSeededRandom, randomFloat, randomInt, randomItem } from './prng.js';
 
 describe('createSeededRandom', () => {
   it('la misma semilla produce siempre la misma secuencia', () => {

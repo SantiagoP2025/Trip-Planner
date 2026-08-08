@@ -1,14 +1,14 @@
-import { createSessionVerifier } from '../../server/auth/create-session-verifier.ts';
-import { GENERATE_RATE_LIMIT, RATE_LIMIT_MAX_TRACKED_KEYS } from '../../server/config/limits.ts';
-import { createGenerateTripHandler } from '../../server/http/handle-generate-trip.ts';
-import { logError } from '../../server/http/logger.ts';
-import { FixedWindowRateLimiter } from '../../server/http/rate-limit.ts';
-import { MockAccommodationProvider } from '../../server/providers/mock-accommodation.provider.ts';
-import { MockFlightProvider } from '../../server/providers/mock-flight.provider.ts';
-import { MockPlacesProvider } from '../../server/providers/mock-places.provider.ts';
-import { MockRoutesProvider } from '../../server/providers/mock-routes.provider.ts';
-import { createTripRepository } from '../../server/repositories/create-trip-repository.ts';
-import { BestEffortTripPersistence } from '../../server/services/trip-persistence.service.ts';
+import { createSessionVerifier } from '../../server/auth/create-session-verifier.js';
+import { GENERATE_RATE_LIMIT, RATE_LIMIT_MAX_TRACKED_KEYS } from '../../server/config/limits.js';
+import { createGenerateTripHandler } from '../../server/http/handle-generate-trip.js';
+import { logError } from '../../server/http/logger.js';
+import { FixedWindowRateLimiter } from '../../server/http/rate-limit.js';
+import { MockAccommodationProvider } from '../../server/providers/mock-accommodation.provider.js';
+import { MockFlightProvider } from '../../server/providers/mock-flight.provider.js';
+import { MockPlacesProvider } from '../../server/providers/mock-places.provider.js';
+import { MockRoutesProvider } from '../../server/providers/mock-routes.provider.js';
+import { createTripRepository } from '../../server/repositories/create-trip-repository.js';
+import { BestEffortTripPersistence } from '../../server/services/trip-persistence.service.js';
 
 // Sección 7.2: POST /api/trips/generate.
 //

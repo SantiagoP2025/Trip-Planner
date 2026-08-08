@@ -5,7 +5,7 @@ import {
   normalizeHigherIsBetter,
   normalizeLowerIsBetter,
   roundScore,
-} from './normalize-score.ts';
+} from './normalize-score.js';
 
 // Sección 17.1: "Normalización de puntuaciones".
 describe('normalizeLowerIsBetter', () => {

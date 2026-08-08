@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import type { TripScoreBreakdown } from '../types/trip.ts';
+import type { TripScoreBreakdown } from '../types/trip.js';
 import {
   allocateBudget,
   calculateMinimumEmergencyReserve,
   calculateMinimumFoodBudget,
-} from './allocate-budget.ts';
-import { MINIMUM_SCORES, checkHardConstraints, meetsMinimumScores, type HardConstraintInput } from './validate-trip.ts';
-import { buildAccommodation, buildFlight, buildItineraryItem } from './test-fixtures.ts';
+} from './allocate-budget.js';
+import { MINIMUM_SCORES, checkHardConstraints, meetsMinimumScores, type HardConstraintInput } from './validate-trip.js';
+import { buildAccommodation, buildFlight, buildItineraryItem } from './test-fixtures.js';
 
 const flight = buildFlight({ id: 'f1', totalPrice: 400 });
 const accommodation = buildAccommodation({ id: 'h1', totalPrice: 600, capacity: 4 });

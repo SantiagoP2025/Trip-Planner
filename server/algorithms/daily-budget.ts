@@ -1,4 +1,4 @@
-import { roundCurrency } from './allocate-budget.ts';
+import { roundCurrency } from './allocate-budget.js';
 
 // Sección 12.3: `calculateDailyBudget()`. Reparte entre los días lo que la
 // sección 9 asignó al viaje entero.

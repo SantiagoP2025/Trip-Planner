@@ -1,26 +1,26 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { SessionResult, SessionVerifier } from '../auth/session.ts';
-import { MAX_REQUEST_BODY_BYTES } from '../config/limits.ts';
-import { MockAccommodationProvider } from '../providers/mock-accommodation.provider.ts';
-import { MockFlightProvider } from '../providers/mock-flight.provider.ts';
-import { MockPlacesProvider } from '../providers/mock-places.provider.ts';
-import type { AccommodationProvider } from '../providers/accommodation.provider.ts';
-import type { FlightProvider } from '../providers/flight.provider.ts';
-import type { PlacesProvider } from '../providers/places.provider.ts';
+import type { SessionResult, SessionVerifier } from '../auth/session.js';
+import { MAX_REQUEST_BODY_BYTES } from '../config/limits.js';
+import { MockAccommodationProvider } from '../providers/mock-accommodation.provider.js';
+import { MockFlightProvider } from '../providers/mock-flight.provider.js';
+import { MockPlacesProvider } from '../providers/mock-places.provider.js';
+import type { AccommodationProvider } from '../providers/accommodation.provider.js';
+import type { FlightProvider } from '../providers/flight.provider.js';
+import type { PlacesProvider } from '../providers/places.provider.js';
 import type {
   NewTripRequest,
   TripGenerationOutcome,
   TripRepository,
-} from '../repositories/trip.repository.ts';
+} from '../repositories/trip.repository.js';
 import {
   BestEffortTripPersistence,
   type TripPersistence,
-} from '../services/trip-persistence.service.ts';
-import type { TripPlannerProviders } from '../services/trip-planner.service.ts';
-import type { ApiErrorBody, GenerateTripResponseBody } from '../types/api.ts';
-import type { FlightOffer } from '../types/flight.ts';
-import { createGenerateTripHandler } from './handle-generate-trip.ts';
-import { FixedWindowRateLimiter, type RateLimiter } from './rate-limit.ts';
+} from '../services/trip-persistence.service.js';
+import type { TripPlannerProviders } from '../services/trip-planner.service.js';
+import type { ApiErrorBody, GenerateTripResponseBody } from '../types/api.js';
+import type { FlightOffer } from '../types/flight.js';
+import { createGenerateTripHandler } from './handle-generate-trip.js';
+import { FixedWindowRateLimiter, type RateLimiter } from './rate-limit.js';
 
 // El esquema compara la fecha de salida con "hoy", así que el reloj del sistema
 // se congela: sin esto, el test caducaría solo al llegar septiembre de 2026.

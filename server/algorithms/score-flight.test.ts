@@ -7,8 +7,8 @@ import {
   calculateUsableHours,
   scoreFlight,
   scoreUsableTime,
-} from './score-flight.ts';
-import { buildFlight } from './test-fixtures.ts';
+} from './score-flight.js';
+import { buildFlight } from './test-fixtures.js';
 
 const barato = buildFlight({ id: 'barato', totalPrice: 100, totalDurationMinutes: 120, stops: 0 });
 const medio = buildFlight({ id: 'medio', totalPrice: 300, totalDurationMinutes: 240, stops: 1 });

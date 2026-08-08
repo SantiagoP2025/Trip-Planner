@@ -1,6 +1,6 @@
-import type { FlightOffer, FlightSegment } from '../types/flight.ts';
-import type { FlightSearchRequest } from '../types/provider.ts';
-import { randomBoolean, randomFloat, randomInt, randomItem } from './prng.ts';
+import type { FlightOffer, FlightSegment } from '../types/flight.js';
+import type { FlightSearchRequest } from '../types/provider.js';
+import { randomBoolean, randomFloat, randomInt, randomItem } from './prng.js';
 
 const CARRIERS = [
   'Iberia',

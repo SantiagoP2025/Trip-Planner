@@ -1,10 +1,10 @@
 import { createClient } from '@supabase/supabase-js';
-import { readSupabasePublicConfig, type SupabasePublicConfigResult } from '../config/env.ts';
+import { readSupabasePublicConfig, type SupabasePublicConfigResult } from '../config/env.js';
 import {
   SupabaseSessionVerifier,
   UnavailableSessionVerifier,
   type SessionVerifier,
-} from './session.ts';
+} from './session.js';
 
 // Único sitio donde se decide contra qué se comprueban las sesiones, igual que
 // `create-trip-repository.ts` es el único que decide contra qué se guarda. Ni el

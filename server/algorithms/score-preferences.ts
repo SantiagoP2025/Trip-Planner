@@ -1,6 +1,6 @@
-import type { PreferenceProfile } from '../types/common.ts';
-import type { ActivityCandidate } from '../types/activity.ts';
-import { roundScore } from './normalize-score.ts';
+import type { PreferenceProfile } from '../types/common.js';
+import type { ActivityCandidate } from '../types/activity.js';
+import { roundScore } from './normalize-score.js';
 
 // Sección 6: el nivel máximo de una preferencia es 3 ("Imprescindible").
 export const MAX_PREFERENCE_LEVEL = 3;

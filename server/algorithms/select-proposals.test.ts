@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import type { TripScoreBreakdown } from '../types/trip.ts';
-import { rescoreForProfile } from './score-trip.ts';
-import { selectDiverseProposals, type ProposalCandidate } from './select-proposals.ts';
+import type { TripScoreBreakdown } from '../types/trip.js';
+import { rescoreForProfile } from './score-trip.js';
+import { selectDiverseProposals, type ProposalCandidate } from './select-proposals.js';
 
 function candidate(
   id: string,

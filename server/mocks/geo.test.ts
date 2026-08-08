@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { createSeededRandom } from './prng.ts';
+import { createSeededRandom } from './prng.js';
 import {
   deriveBaseCoordinate,
   haversineDistanceKm,
   jitterCoordinate,
   wrapLongitude,
-} from './geo.ts';
+} from './geo.js';
 
 describe('deriveBaseCoordinate', () => {
   it('el mismo destino da siempre la misma coordenada', () => {

@@ -1,5 +1,5 @@
-import type { Currency } from '../types/common.ts';
-import type { BudgetBreakdown } from '../types/trip.ts';
+import type { Currency } from '../types/common.js';
+import type { BudgetBreakdown } from '../types/trip.js';
 
 // Sección 9: los porcentajes son un punto de partida, no un reparto rígido.
 // Se usan para repartir lo que sobra después de pagar los costes reales.

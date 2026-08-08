@@ -1,5 +1,5 @@
-import type { AccommodationOffer } from '../types/accommodation.ts';
-import type { FlightOffer } from '../types/flight.ts';
+import type { AccommodationOffer } from '../types/accommodation.js';
+import type { FlightOffer } from '../types/flight.js';
 
 // Regla 8 de CLAUDE.md: recortar antes de combinar. 200 vuelos por 300
 // alojamientos son 60.000 combinaciones para acabar enseñando tres; con el

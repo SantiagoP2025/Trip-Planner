@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { FlightSearchRequest } from '../types/provider.ts';
-import { MockFlightProvider } from './mock-flight.provider.ts';
+import type { FlightSearchRequest } from '../types/provider.js';
+import { MockFlightProvider } from './mock-flight.provider.js';
 
 const request: FlightSearchRequest = {
   origin: 'Madrid',

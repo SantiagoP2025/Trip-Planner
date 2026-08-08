@@ -1,7 +1,7 @@
-import type { ActivityCandidate } from '../types/activity.ts';
-import type { PreferenceProfile } from '../types/common.ts';
-import { roundCurrency } from './allocate-budget.ts';
-import { calculateActivitiesPreferenceScore, calculatePreferenceScore } from './score-preferences.ts';
+import type { ActivityCandidate } from '../types/activity.js';
+import type { PreferenceProfile } from '../types/common.js';
+import { roundCurrency } from './allocate-budget.js';
+import { calculateActivitiesPreferenceScore, calculatePreferenceScore } from './score-preferences.js';
 
 // Sección 12.1: "Máximo tres visitas principales al día".
 export const MAX_VISITS_PER_DAY = 3;

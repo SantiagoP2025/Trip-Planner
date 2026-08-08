@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { buildAccommodation, buildFlight } from '../algorithms/test-fixtures.ts';
-import type { ActivityCandidate } from '../types/activity.ts';
-import type { PreferenceProfile } from '../types/common.ts';
-import type { BudgetBreakdown, TripScoreBreakdown } from '../types/trip.ts';
+import { buildAccommodation, buildFlight } from '../algorithms/test-fixtures.js';
+import type { ActivityCandidate } from '../types/activity.js';
+import type { PreferenceProfile } from '../types/common.js';
+import type { BudgetBreakdown, TripScoreBreakdown } from '../types/trip.js';
 import {
   buildProposalReasons,
   buildProposalWarnings,
   type ProposalExplanationInput,
-} from './explain-proposal.ts';
+} from './explain-proposal.js';
 
 const NO_PREFERENCES: PreferenceProfile = {
   beach: 0,

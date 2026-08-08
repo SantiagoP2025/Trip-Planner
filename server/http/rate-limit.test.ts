@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { FixedWindowRateLimiter, rateLimitHeaders } from './rate-limit.ts';
+import { FixedWindowRateLimiter, rateLimitHeaders } from './rate-limit.js';
 
 // Reloj controlado: el limitador depende del tiempo, y un test que dependa del
 // reloj real es un test que falla solo de vez en cuando.

@@ -1,4 +1,4 @@
-import type { TravelMatrix } from './travel-matrix.ts';
+import type { TravelMatrix } from './travel-matrix.js';
 
 // Sección 12.3: `clusterPlacesByProximity()` y `distributePlacesAcrossDays()`.
 //

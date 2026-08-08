@@ -1,4 +1,4 @@
-import { randomFloat } from './prng.ts';
+import { randomFloat } from './prng.js';
 
 export interface Coordinate {
   latitude: number;

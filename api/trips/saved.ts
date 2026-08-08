@@ -1,9 +1,9 @@
-import { createSessionVerifier } from '../../server/auth/create-session-verifier.ts';
-import { RATE_LIMIT_MAX_TRACKED_KEYS, SAVED_TRIPS_RATE_LIMIT } from '../../server/config/limits.ts';
-import { createSavedTripsHandler } from '../../server/http/handle-saved-trips.ts';
-import { logError } from '../../server/http/logger.ts';
-import { FixedWindowRateLimiter } from '../../server/http/rate-limit.ts';
-import { createSavedTripRepository } from '../../server/repositories/create-saved-trip-repository.ts';
+import { createSessionVerifier } from '../../server/auth/create-session-verifier.js';
+import { RATE_LIMIT_MAX_TRACKED_KEYS, SAVED_TRIPS_RATE_LIMIT } from '../../server/config/limits.js';
+import { createSavedTripsHandler } from '../../server/http/handle-saved-trips.js';
+import { logError } from '../../server/http/logger.js';
+import { FixedWindowRateLimiter } from '../../server/http/rate-limit.js';
+import { createSavedTripRepository } from '../../server/repositories/create-saved-trip-repository.js';
 
 // Fase 8: GET, POST y DELETE de /api/trips/saved.
 //

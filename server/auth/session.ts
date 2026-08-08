@@ -1,4 +1,4 @@
-import { withinTimeout } from '../services/with-timeout.ts';
+import { withinTimeout } from '../services/with-timeout.js';
 
 // Sección 8.2: "Añadir autenticación antes de permitir acceso a viajes
 // privados". Este módulo es el único sitio del servidor que decide si una

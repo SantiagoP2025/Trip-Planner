@@ -1,4 +1,4 @@
-import type { Currency } from './common.ts';
+import type { Currency } from './common.js';
 
 // Sección 14.1: petición que recibe FlightProvider.searchFlights().
 export interface FlightSearchRequest {

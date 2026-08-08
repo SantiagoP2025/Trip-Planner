@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { defaultSavedTripTitle, toSavedTrip, toSavedTripRow } from './saved-trip-rows.ts';
+import { defaultSavedTripTitle, toSavedTrip, toSavedTripRow } from './saved-trip-rows.js';
 
 const PROPOSAL = { id: 'recommended-1', type: 'recommended', estimatedTotal: 2386.06 };
 

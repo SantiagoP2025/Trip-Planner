@@ -1,22 +1,22 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { SessionResult, SessionVerifier } from '../auth/session.ts';
-import { MAX_EDIT_TITLE_LENGTH } from '../config/trip-limits.ts';
-import type { SavedTripRepository } from '../repositories/saved-trip.repository.ts';
+import type { SessionResult, SessionVerifier } from '../auth/session.js';
+import { MAX_EDIT_TITLE_LENGTH } from '../config/trip-limits.js';
+import type { SavedTripRepository } from '../repositories/saved-trip.repository.js';
 import {
   buildSavedTrip,
   FakeSavedTripRepository,
   FIXTURE_SAVED_ID,
   FIXTURE_USER,
-} from '../repositories/test-fixtures.ts';
+} from '../repositories/test-fixtures.js';
 import type {
   ApiErrorBody,
   DeleteItineraryEditResponseBody,
   ItineraryEditResponseBody,
-} from '../types/api.ts';
-import type { ItineraryItem } from '../types/itinerary.ts';
-import type { TripProposal } from '../types/trip.ts';
-import { createItineraryEditsHandler } from './handle-itinerary-edits.ts';
-import { FixedWindowRateLimiter, type RateLimiter } from './rate-limit.ts';
+} from '../types/api.js';
+import type { ItineraryItem } from '../types/itinerary.js';
+import type { TripProposal } from '../types/trip.js';
+import { createItineraryEditsHandler } from './handle-itinerary-edits.js';
+import { FixedWindowRateLimiter, type RateLimiter } from './rate-limit.js';
 
 const ITEM_ID = '2026-09-11-meal-dinner';
 

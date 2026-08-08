@@ -1,12 +1,12 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type { ItineraryEdit, SavedTrip } from '../types/saved-trip.ts';
-import type { ProposalType } from '../types/trip.ts';
-import { toItineraryEdits, toSavedTrip, toSavedTripRow } from './saved-trip-rows.ts';
+import type { ItineraryEdit, SavedTrip } from '../types/saved-trip.js';
+import type { ProposalType } from '../types/trip.js';
+import { toItineraryEdits, toSavedTrip, toSavedTripRow } from './saved-trip-rows.js';
 import type {
   NewSavedTrip,
   SavedTripRepository,
   TripRequestOwnership,
-} from './saved-trip.repository.ts';
+} from './saved-trip.repository.js';
 
 // Implementación de `SavedTripRepository` contra Supabase (migración 0002).
 //

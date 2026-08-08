@@ -5,7 +5,7 @@ import {
   SupabaseSessionVerifier,
   UnavailableSessionVerifier,
   type SupabaseAuthApi,
-} from './session.ts';
+} from './session.js';
 
 function requestWith(authorization?: string): Request {
   const init: RequestInit = authorization ? { headers: { authorization } } : {};

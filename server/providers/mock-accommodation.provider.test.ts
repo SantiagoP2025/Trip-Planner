@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { AccommodationSearchRequest } from '../types/provider.ts';
-import { MockAccommodationProvider } from './mock-accommodation.provider.ts';
+import type { AccommodationSearchRequest } from '../types/provider.js';
+import { MockAccommodationProvider } from './mock-accommodation.provider.js';
 
 const request: AccommodationSearchRequest = {
   destination: 'Lisboa',

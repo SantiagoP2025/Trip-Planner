@@ -1,15 +1,15 @@
-import { calculateDailyBudget } from '../algorithms/daily-budget.ts';
+import { calculateDailyBudget } from '../algorithms/daily-budget.js';
 import {
   clusterPlacesByProximity,
   distributePlacesAcrossDays,
-} from '../algorithms/cluster-places.ts';
+} from '../algorithms/cluster-places.js';
 import {
   DINNER_DURATION_MINUTES,
   LUNCH_DURATION_MINUTES,
   MINIMUM_FREE_MINUTES,
   scheduleDayActivities,
-} from '../algorithms/schedule-itinerary.ts';
-import { calculateVisitsPerDay } from '../algorithms/select-activities.ts';
+} from '../algorithms/schedule-itinerary.js';
+import { calculateVisitsPerDay } from '../algorithms/select-activities.js';
 import {
   addDays,
   addMinutes,
@@ -18,19 +18,19 @@ import {
   earliest,
   latest,
   minutesBetween,
-} from '../algorithms/time.ts';
-import type { TravelMatrix } from '../algorithms/travel-matrix.ts';
+} from '../algorithms/time.js';
+import type { TravelMatrix } from '../algorithms/travel-matrix.js';
 import {
   repairInvalidItinerary,
   type ItineraryDayWindow,
   type ItineraryViolation,
-} from '../algorithms/validate-itinerary.ts';
-import type { AccommodationOffer } from '../types/accommodation.ts';
-import type { ActivityCandidate } from '../types/activity.ts';
-import type { OpeningPeriod, PreferenceProfile } from '../types/common.ts';
-import type { FlightOffer } from '../types/flight.ts';
-import type { ItineraryDay, ItineraryItem } from '../types/itinerary.ts';
-import type { BudgetBreakdown, TripRequest } from '../types/trip.ts';
+} from '../algorithms/validate-itinerary.js';
+import type { AccommodationOffer } from '../types/accommodation.js';
+import type { ActivityCandidate } from '../types/activity.js';
+import type { OpeningPeriod, PreferenceProfile } from '../types/common.js';
+import type { FlightOffer } from '../types/flight.js';
+import type { ItineraryDay, ItineraryItem } from '../types/itinerary.js';
+import type { BudgetBreakdown, TripRequest } from '../types/trip.js';
 
 // Sección 12: generación del itinerario, de principio a fin.
 //

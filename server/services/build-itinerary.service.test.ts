@@ -5,19 +5,19 @@ import {
   calculateBusyMinutes,
   calculateLongestContinuousMinutes,
   detectOverlaps,
-} from '../algorithms/schedule-itinerary.ts';
-import { buildAccommodation, buildFlight } from '../algorithms/test-fixtures.ts';
-import { minutesBetween } from '../algorithms/time.ts';
-import { calculateTravelMatrix, type TravelMatrix } from '../algorithms/travel-matrix.ts';
-import type { ActivityCandidate } from '../types/activity.ts';
-import type { OpeningPeriod, PreferenceProfile } from '../types/common.ts';
-import type { ItineraryDay, ItineraryItem } from '../types/itinerary.ts';
-import type { BudgetBreakdown, TripRequest } from '../types/trip.ts';
+} from '../algorithms/schedule-itinerary.js';
+import { buildAccommodation, buildFlight } from '../algorithms/test-fixtures.js';
+import { minutesBetween } from '../algorithms/time.js';
+import { calculateTravelMatrix, type TravelMatrix } from '../algorithms/travel-matrix.js';
+import type { ActivityCandidate } from '../types/activity.js';
+import type { OpeningPeriod, PreferenceProfile } from '../types/common.js';
+import type { ItineraryDay, ItineraryItem } from '../types/itinerary.js';
+import type { BudgetBreakdown, TripRequest } from '../types/trip.js';
 import {
   AIRPORT_CHECK_IN_MARGIN_MINUTES,
   buildItinerary,
   calculateDayWindows,
-} from './build-itinerary.service.ts';
+} from './build-itinerary.service.js';
 
 // Sección 17.2: la prueba de integración del itinerario. Lo que se comprueba
 // aquí son las reglas de la sección 12.1 sobre el resultado final, no cada

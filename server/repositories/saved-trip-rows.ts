@@ -1,6 +1,6 @@
-import type { ItineraryEdit, SavedTrip } from '../types/saved-trip.ts';
-import type { TripProposal } from '../types/trip.ts';
-import type { NewSavedTrip } from './saved-trip.repository.ts';
+import type { ItineraryEdit, SavedTrip } from '../types/saved-trip.js';
+import type { TripProposal } from '../types/trip.js';
+import type { NewSavedTrip } from './saved-trip.repository.js';
 
 // Traducción entre las filas de `saved_trips` y el tipo del dominio, aparte del
 // repositorio y sin dependencias del cliente de Supabase. Es donde se cuelan los

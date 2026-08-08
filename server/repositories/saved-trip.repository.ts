@@ -1,5 +1,5 @@
-import type { ItineraryEdit, SavedTrip } from '../types/saved-trip.ts';
-import type { ProposalType } from '../types/trip.ts';
+import type { ItineraryEdit, SavedTrip } from '../types/saved-trip.js';
+import type { ProposalType } from '../types/trip.js';
 
 // Sección 14.1, mismo patrón que con los proveedores y con `TripRepository`: el
 // endpoint habla con esta interfaz y no con Supabase.

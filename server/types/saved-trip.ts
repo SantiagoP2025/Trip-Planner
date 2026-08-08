@@ -1,4 +1,4 @@
-import type { TripProposal } from './trip.ts';
+import type { TripProposal } from './trip.js';
 
 // Fase 11: lo que el usuario ha reescrito de un bloque del itinerario.
 //

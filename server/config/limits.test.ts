@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isWithinBodySizeLimit, MAX_REQUEST_BODY_BYTES } from './limits.ts';
+import { isWithinBodySizeLimit, MAX_REQUEST_BODY_BYTES } from './limits.js';
 
 describe('isWithinBodySizeLimit', () => {
   it('acepta un body dentro del límite', () => {

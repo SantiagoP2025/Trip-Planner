@@ -2,8 +2,8 @@ import { z } from 'zod';
 import {
   MAX_SAVED_TRIP_TITLE_LENGTH,
   MIN_SAVED_TRIP_TITLE_LENGTH,
-} from '../config/trip-limits.ts';
-import type { ValidationError } from '../types/trip.ts';
+} from '../config/trip-limits.js';
+import type { ValidationError } from '../types/trip.js';
 
 // Regla 5 de CLAUDE.md: toda entrada del usuario pasa por Zod en el servidor,
 // con límites explícitos por campo. También cuando el cuerpo son tres campos.

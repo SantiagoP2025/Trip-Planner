@@ -1,8 +1,8 @@
-import type { ActivityCandidate } from '../types/activity.ts';
-import type { OpeningPeriod, PreferenceLevel, PreferenceProfile, TravelPreference } from '../types/common.ts';
-import type { ActivitySearchRequest } from '../types/provider.ts';
-import { randomBoolean, randomFloat, randomInt, randomItem } from './prng.ts';
-import { deriveBaseCoordinate, jitterCoordinate } from './geo.ts';
+import type { ActivityCandidate } from '../types/activity.js';
+import type { OpeningPeriod, PreferenceLevel, PreferenceProfile, TravelPreference } from '../types/common.js';
+import type { ActivitySearchRequest } from '../types/provider.js';
+import { randomBoolean, randomFloat, randomInt, randomItem } from './prng.js';
+import { deriveBaseCoordinate, jitterCoordinate } from './geo.js';
 
 const CATEGORIES_BY_PREFERENCE: Record<TravelPreference, string[]> = {
   beach: ['Playa', 'Deporte acuático', 'Paseo marítimo'],

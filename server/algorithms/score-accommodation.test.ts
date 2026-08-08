@@ -5,8 +5,8 @@ import {
   calculateGroupFitScore,
   calculateRatingScore,
   scoreAccommodation,
-} from './score-accommodation.ts';
-import { buildAccommodation } from './test-fixtures.ts';
+} from './score-accommodation.js';
+import { buildAccommodation } from './test-fixtures.js';
 
 const barato = buildAccommodation({ id: 'barato', totalPrice: 300, distanceToCenterKm: 6, rating: 3, reviewCount: 500, capacity: 2 });
 const medio = buildAccommodation({ id: 'medio', totalPrice: 600, distanceToCenterKm: 3, rating: 4, reviewCount: 500, capacity: 2 });

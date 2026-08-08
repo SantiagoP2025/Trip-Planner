@@ -1,5 +1,5 @@
-import type { ItineraryDay, ItineraryItem } from '../types/itinerary.ts';
-import type { ItineraryEdit } from '../types/saved-trip.ts';
+import type { ItineraryDay, ItineraryItem } from '../types/itinerary.js';
+import type { ItineraryEdit } from '../types/saved-trip.js';
 
 // Fase 11: qué cuenta como edición y qué no.
 //

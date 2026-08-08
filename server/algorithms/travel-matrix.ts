@@ -1,4 +1,4 @@
-import type { RouteMatrixEntry, RouteTransportMode } from '../types/provider.ts';
+import type { RouteMatrixEntry, RouteTransportMode } from '../types/provider.js';
 
 // Sección 12.3: `calculateTravelMatrix()`. Convierte la lista plana que devuelve
 // el proveedor de rutas en algo que se pueda consultar por pares.

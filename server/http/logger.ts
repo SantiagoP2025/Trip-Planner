@@ -1,4 +1,4 @@
-import type { TripGenerationDiagnostics } from '../types/trip.ts';
+import type { TripGenerationDiagnostics } from '../types/trip.js';
 
 // Sección 16.3 y sección 8.2 ("Registrar errores sin almacenar datos personales
 // innecesarios"): al log va lo que sirve para diagnosticar —identificador,

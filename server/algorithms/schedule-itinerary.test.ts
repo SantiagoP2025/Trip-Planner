@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import type { ActivityCandidate } from '../types/activity.ts';
-import type { OpeningPeriod } from '../types/common.ts';
-import type { ItineraryItem } from '../types/itinerary.ts';
+import type { ActivityCandidate } from '../types/activity.js';
+import type { OpeningPeriod } from '../types/common.js';
+import type { ItineraryItem } from '../types/itinerary.js';
 import {
   calculateBusyMinutes,
   calculateLongestContinuousMinutes,
@@ -12,9 +12,9 @@ import {
   MAX_CONTINUOUS_MINUTES,
   MINIMUM_FREE_MINUTES,
   scheduleDayActivities,
-} from './schedule-itinerary.ts';
-import { buildItineraryItem } from './test-fixtures.ts';
-import { calculateTravelMatrix, type TravelMatrix } from './travel-matrix.ts';
+} from './schedule-itinerary.js';
+import { buildItineraryItem } from './test-fixtures.js';
+import { calculateTravelMatrix, type TravelMatrix } from './travel-matrix.js';
 
 // 2026-09-10 es jueves: día 4 de la semana.
 const JUEVES = 4;

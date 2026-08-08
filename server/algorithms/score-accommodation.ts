@@ -1,11 +1,11 @@
-import type { AccommodationOffer } from '../types/accommodation.ts';
+import type { AccommodationOffer } from '../types/accommodation.js';
 import {
   calculateRange,
   clampScore,
   normalizeLowerIsBetter,
   roundScore,
   type ValueRange,
-} from './normalize-score.ts';
+} from './normalize-score.js';
 
 // Sección 11.4: pesos orientativos de la puntuación de alojamiento.
 export const ACCOMMODATION_SCORE_WEIGHTS = {

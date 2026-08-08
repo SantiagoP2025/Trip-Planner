@@ -6,7 +6,7 @@ import {
   calculateMinimumEmergencyReserve,
   calculateMinimumFoodBudget,
   type BudgetInput,
-} from './allocate-budget.ts';
+} from './allocate-budget.js';
 
 const baseInput: BudgetInput = {
   budget: 2000,

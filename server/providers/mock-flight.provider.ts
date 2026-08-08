@@ -1,8 +1,8 @@
-import type { FlightOffer } from '../types/flight.ts';
-import type { FlightSearchRequest } from '../types/provider.ts';
-import { generateFlightOffers } from '../mocks/flights.mock.ts';
-import { createSeededRandom } from '../mocks/prng.ts';
-import type { FlightProvider } from './flight.provider.ts';
+import type { FlightOffer } from '../types/flight.js';
+import type { FlightSearchRequest } from '../types/provider.js';
+import { generateFlightOffers } from '../mocks/flights.mock.js';
+import { createSeededRandom } from '../mocks/prng.js';
+import type { FlightProvider } from './flight.provider.js';
 
 function buildSeed(request: FlightSearchRequest): string {
   return [

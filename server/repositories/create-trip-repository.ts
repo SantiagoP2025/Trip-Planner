@@ -1,10 +1,10 @@
-import { readSupabaseConfig, type SupabaseConfigResult } from '../config/env.ts';
-import { NoopTripRepository } from './noop-trip.repository.ts';
+import { readSupabaseConfig, type SupabaseConfigResult } from '../config/env.js';
+import { NoopTripRepository } from './noop-trip.repository.js';
 import {
   createSupabaseClient,
   SupabaseTripRepository,
-} from './supabase-trip.repository.ts';
-import type { TripRepository } from './trip.repository.ts';
+} from './supabase-trip.repository.js';
+import type { TripRepository } from './trip.repository.js';
 
 // Único sitio donde se decide contra qué se guarda. Aísla del resto del código
 // la comprobación de configuración, para que ni el handler ni el fichero de

@@ -1,8 +1,8 @@
-import type { Currency, PreferenceProfile } from './common.ts';
-import type { FlightOffer } from './flight.ts';
-import type { AccommodationOffer } from './accommodation.ts';
-import type { ActivityCandidate } from './activity.ts';
-import type { ItineraryDay } from './itinerary.ts';
+import type { Currency, PreferenceProfile } from './common.js';
+import type { FlightOffer } from './flight.js';
+import type { AccommodationOffer } from './accommodation.js';
+import type { ActivityCandidate } from './activity.js';
+import type { ItineraryDay } from './itinerary.js';
 
 export type TravelStyle = 'economical' | 'balanced' | 'comfort';
 

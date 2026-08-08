@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import type { PreferenceProfile } from '../types/common.ts';
+import type { PreferenceProfile } from '../types/common.js';
 import type {
   TripGenerationDiagnostics,
   TripProposal,
   TripRequest,
-} from '../types/trip.ts';
-import type { TripGenerationOutcome } from './trip.repository.ts';
-import { toProviderSearchRows, toTripProposalRows, toTripRequestRow } from './trip-rows.ts';
+} from '../types/trip.js';
+import type { TripGenerationOutcome } from './trip.repository.js';
+import { toProviderSearchRows, toTripProposalRows, toTripRequestRow } from './trip-rows.js';
 
 const PREFERENCES: PreferenceProfile = {
   beach: 1,

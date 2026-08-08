@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { ActivitySearchRequest } from '../types/provider.ts';
-import { MockPlacesProvider } from './mock-places.provider.ts';
+import type { ActivitySearchRequest } from '../types/provider.js';
+import { MockPlacesProvider } from './mock-places.provider.js';
 
 const request: ActivitySearchRequest = { destination: 'Lisboa' };
 const PREFERENCE_KEYS = ['beach', 'culture', 'gastronomy', 'nightlife', 'nature', 'shopping', 'family', 'relax'];

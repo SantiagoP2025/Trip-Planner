@@ -1,9 +1,9 @@
-import type { HealthResponseBody } from '../types/api.ts';
-import { logRequest } from './logger.ts';
-import { rateLimitHeaders, type RateLimiter } from './rate-limit.ts';
-import { createRequestId, resolveClientIp } from './request-context.ts';
-import { errorResponse, jsonResponse } from './responses.ts';
-import type { RequestHandler } from './handler.ts';
+import type { HealthResponseBody } from '../types/api.js';
+import { logRequest } from './logger.js';
+import { rateLimitHeaders, type RateLimiter } from './rate-limit.js';
+import { createRequestId, resolveClientIp } from './request-context.js';
+import { errorResponse, jsonResponse } from './responses.js';
+import type { RequestHandler } from './handler.js';
 
 // Sección 7.1: GET /api/health. Demuestra que Vercel reconoce la carpeta `api`,
 // compila TypeScript y ejecuta código de servidor. Criterio de aceptación de la

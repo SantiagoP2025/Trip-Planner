@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { createTripRepository } from './create-trip-repository.ts';
-import { NoopTripRepository } from './noop-trip.repository.ts';
-import { SupabaseTripRepository } from './supabase-trip.repository.ts';
+import { createTripRepository } from './create-trip-repository.js';
+import { NoopTripRepository } from './noop-trip.repository.js';
+import { SupabaseTripRepository } from './supabase-trip.repository.js';
 
 describe('createTripRepository', () => {
   it('usa Supabase cuando la configuración está completa', () => {

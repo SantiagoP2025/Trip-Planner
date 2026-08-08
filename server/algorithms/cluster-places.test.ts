@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import type { RouteMatrixEntry } from '../types/provider.ts';
-import { clusterPlacesByProximity, distributePlacesAcrossDays } from './cluster-places.ts';
-import { calculateTravelMatrix, type TravelMatrix } from './travel-matrix.ts';
+import type { RouteMatrixEntry } from '../types/provider.js';
+import { clusterPlacesByProximity, distributePlacesAcrossDays } from './cluster-places.js';
+import { calculateTravelMatrix, type TravelMatrix } from './travel-matrix.js';
 
 // Ciudad de juguete en una recta: el hotel en el kilómetro 0 y cada lugar a su
 // distancia. Un minuto por kilómetro, para que los números se lean solos.

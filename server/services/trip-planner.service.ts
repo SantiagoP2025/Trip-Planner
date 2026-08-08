@@ -5,39 +5,39 @@ import {
   calculateMinimumFoodBudget,
   DEFAULT_BUDGET_POLICY,
   type BudgetPolicy,
-} from '../algorithms/allocate-budget.ts';
-import { combineOffers } from '../algorithms/combine-offers.ts';
-import { filterDominated } from '../algorithms/pareto-filter.ts';
+} from '../algorithms/allocate-budget.js';
+import { combineOffers } from '../algorithms/combine-offers.js';
+import { filterDominated } from '../algorithms/pareto-filter.js';
 import {
   buildAccommodationScoringContext,
   calculateAccommodationQualityScore,
   scoreAccommodation,
-} from '../algorithms/score-accommodation.ts';
+} from '../algorithms/score-accommodation.js';
 import {
   buildFlightScoringContext,
   calculateTransportComfortScore,
   calculateUsableHours,
   scoreFlight,
   scoreUsableTime,
-} from '../algorithms/score-flight.ts';
-import { buildTripScoringContext, calculateTripScore } from '../algorithms/score-trip.ts';
-import { selectActivities } from '../algorithms/select-activities.ts';
-import { selectDiverseProposals, type ProposalCandidate } from '../algorithms/select-proposals.ts';
-import { checkHardConstraints, meetsMinimumScores } from '../algorithms/validate-trip.ts';
+} from '../algorithms/score-flight.js';
+import { buildTripScoringContext, calculateTripScore } from '../algorithms/score-trip.js';
+import { selectActivities } from '../algorithms/select-activities.js';
+import { selectDiverseProposals, type ProposalCandidate } from '../algorithms/select-proposals.js';
+import { checkHardConstraints, meetsMinimumScores } from '../algorithms/validate-trip.js';
 import {
   calculateTravelMatrix,
   DEFAULT_TRANSPORT_MODE,
   type TravelMatrix,
-} from '../algorithms/travel-matrix.ts';
-import type { AccommodationProvider } from '../providers/accommodation.provider.ts';
-import type { FlightProvider } from '../providers/flight.provider.ts';
-import type { PlacesProvider } from '../providers/places.provider.ts';
-import type { RoutesProvider } from '../providers/routes.provider.ts';
-import type { RoutePoint } from '../types/provider.ts';
-import { buildItinerary } from './build-itinerary.service.ts';
-import type { AccommodationOffer } from '../types/accommodation.ts';
-import type { ActivityCandidate } from '../types/activity.ts';
-import type { FlightOffer } from '../types/flight.ts';
+} from '../algorithms/travel-matrix.js';
+import type { AccommodationProvider } from '../providers/accommodation.provider.js';
+import type { FlightProvider } from '../providers/flight.provider.js';
+import type { PlacesProvider } from '../providers/places.provider.js';
+import type { RoutesProvider } from '../providers/routes.provider.js';
+import type { RoutePoint } from '../types/provider.js';
+import { buildItinerary } from './build-itinerary.service.js';
+import type { AccommodationOffer } from '../types/accommodation.js';
+import type { ActivityCandidate } from '../types/activity.js';
+import type { FlightOffer } from '../types/flight.js';
 import type {
   BudgetBreakdown,
   TripGenerationDiagnostics,
@@ -45,8 +45,8 @@ import type {
   TripProposal,
   TripRequest,
   TripScoreBreakdown,
-} from '../types/trip.ts';
-import { buildProposalReasons, buildProposalWarnings } from './explain-proposal.ts';
+} from '../types/trip.js';
+import { buildProposalReasons, buildProposalWarnings } from './explain-proposal.js';
 
 // Regla 1 de CLAUDE.md: este es el único sitio donde se generan propuestas. El
 // frontend pide, recibe y pinta; no construye nada.

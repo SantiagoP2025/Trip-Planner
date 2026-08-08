@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createRequestId, resolveClientIp } from './request-context.ts';
+import { createRequestId, resolveClientIp } from './request-context.js';
 
 function requestWith(headers: Record<string, string>): Request {
   return new Request('https://ejemplo.test/api/health', { headers });

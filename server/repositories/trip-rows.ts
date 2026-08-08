@@ -1,6 +1,6 @@
-import type { PreferenceProfile } from '../types/common.ts';
-import type { TripConstraints, TripProposal } from '../types/trip.ts';
-import type { NewTripRequest, TripGenerationOutcome, TripRequestStatus } from './trip.repository.ts';
+import type { PreferenceProfile } from '../types/common.js';
+import type { TripConstraints, TripProposal } from '../types/trip.js';
+import type { NewTripRequest, TripGenerationOutcome, TripRequestStatus } from './trip.repository.js';
 
 // Traducción entre los tipos del dominio y las filas de la sección 13.1.
 //

@@ -1,17 +1,17 @@
-import { readBearerToken, type AuthenticatedUser, type SessionVerifier } from '../auth/session.ts';
-import type { SavedTripRepository } from '../repositories/saved-trip.repository.ts';
+import { readBearerToken, type AuthenticatedUser, type SessionVerifier } from '../auth/session.js';
+import type { SavedTripRepository } from '../repositories/saved-trip.repository.js';
 import {
   validateDeleteItineraryEdit,
   validateItineraryEdit,
-} from '../schemas/itinerary-edit.schema.ts';
-import { findItineraryItem, toStoredEdit } from '../services/itinerary-edits.ts';
-import type { DeleteItineraryEditResponseBody, ItineraryEditResponseBody } from '../types/api.ts';
-import type { RequestHandler } from './handler.ts';
-import { logError, logRequest } from './logger.ts';
-import { messageForJsonBodyFailure, readJsonBody } from './read-json-body.ts';
-import { rateLimitHeaders, type RateLimiter } from './rate-limit.ts';
-import { createRequestId, resolveClientIp } from './request-context.ts';
-import { errorResponse, jsonResponse } from './responses.ts';
+} from '../schemas/itinerary-edit.schema.js';
+import { findItineraryItem, toStoredEdit } from '../services/itinerary-edits.js';
+import type { DeleteItineraryEditResponseBody, ItineraryEditResponseBody } from '../types/api.js';
+import type { RequestHandler } from './handler.js';
+import { logError, logRequest } from './logger.js';
+import { messageForJsonBodyFailure, readJsonBody } from './read-json-body.js';
+import { rateLimitHeaders, type RateLimiter } from './rate-limit.js';
+import { createRequestId, resolveClientIp } from './request-context.js';
+import { errorResponse, jsonResponse } from './responses.js';
 
 // Fase 11: PUT y DELETE de /api/trips/itinerary-edits.
 //

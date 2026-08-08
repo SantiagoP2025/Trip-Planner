@@ -1,6 +1,6 @@
-import type { RouteMatrixEntry, RouteMatrixRequest, RouteTransportMode } from '../types/provider.ts';
-import { haversineDistanceKm } from '../mocks/geo.ts';
-import type { RoutesProvider } from './routes.provider.ts';
+import type { RouteMatrixEntry, RouteMatrixRequest, RouteTransportMode } from '../types/provider.js';
+import { haversineDistanceKm } from '../mocks/geo.js';
+import type { RoutesProvider } from './routes.provider.js';
 
 // Velocidades medias orientativas por modo, solo para el proveedor simulado.
 const AVERAGE_SPEED_KMH: Record<RouteTransportMode, number> = {

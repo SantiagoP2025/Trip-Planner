@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { ApiErrorBody, HealthResponseBody } from '../types/api.ts';
-import { createHealthHandler } from './handle-health.ts';
-import { FixedWindowRateLimiter, type RateLimiter } from './rate-limit.ts';
+import type { ApiErrorBody, HealthResponseBody } from '../types/api.js';
+import { createHealthHandler } from './handle-health.js';
+import { FixedWindowRateLimiter, type RateLimiter } from './rate-limit.js';
 
 const NOW = new Date('2026-08-07T10:00:00.000Z');
 

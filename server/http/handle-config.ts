@@ -1,10 +1,10 @@
-import { readSupabasePublicConfig } from '../config/env.ts';
-import type { RuntimeConfigResponseBody } from '../types/api.ts';
-import type { RequestHandler } from './handler.ts';
-import { logRequest } from './logger.ts';
-import { rateLimitHeaders, type RateLimiter } from './rate-limit.ts';
-import { createRequestId, resolveClientIp } from './request-context.ts';
-import { errorResponse, jsonResponse } from './responses.ts';
+import { readSupabasePublicConfig } from '../config/env.js';
+import type { RuntimeConfigResponseBody } from '../types/api.js';
+import type { RequestHandler } from './handler.js';
+import { logRequest } from './logger.js';
+import { rateLimitHeaders, type RateLimiter } from './rate-limit.js';
+import { createRequestId, resolveClientIp } from './request-context.js';
+import { errorResponse, jsonResponse } from './responses.js';
 
 // Fase 8: GET /api/config. Configuración de ejecución para el navegador.
 //

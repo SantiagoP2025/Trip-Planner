@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { calculateDailyBudget, MEALS_PER_DAY } from './daily-budget.ts';
+import { calculateDailyBudget, MEALS_PER_DAY } from './daily-budget.js';
 
 describe('calculateDailyBudget', () => {
   it('reparte la partida de comidas entre los días', () => {

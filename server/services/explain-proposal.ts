@@ -1,8 +1,8 @@
-import type { AccommodationOffer } from '../types/accommodation.ts';
-import type { ActivityCandidate } from '../types/activity.ts';
-import type { PreferenceProfile, TravelPreference } from '../types/common.ts';
-import type { FlightOffer } from '../types/flight.ts';
-import type { BudgetBreakdown, ProposalType, TripScoreBreakdown } from '../types/trip.ts';
+import type { AccommodationOffer } from '../types/accommodation.js';
+import type { ActivityCandidate } from '../types/activity.js';
+import type { PreferenceProfile, TravelPreference } from '../types/common.js';
+import type { FlightOffer } from '../types/flight.js';
+import type { BudgetBreakdown, ProposalType, TripScoreBreakdown } from '../types/trip.js';
 
 // Sección 10.7: cada propuesta debe poder explicar por qué se eligió. Estos
 // textos llegan tal cual al usuario, así que van en español y sin jerga técnica

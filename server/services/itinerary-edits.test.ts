@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import type { ItineraryDay, ItineraryItem } from '../types/itinerary.ts';
+import type { ItineraryDay, ItineraryItem } from '../types/itinerary.js';
 import {
   findItineraryItem,
   indexEditsByItemId,
   isMeaningfulEdit,
   normalizeEdit,
   toStoredEdit,
-} from './itinerary-edits.ts';
+} from './itinerary-edits.js';
 
 function item(overrides: Partial<ItineraryItem> = {}): ItineraryItem {
   return {

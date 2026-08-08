@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import type { PreferenceProfile } from '../types/common.ts';
-import type { ActivityCandidate } from '../types/activity.ts';
+import type { PreferenceProfile } from '../types/common.js';
+import type { ActivityCandidate } from '../types/activity.js';
 import {
   NEUTRAL_PREFERENCE_SCORE,
   calculateActivitiesPreferenceScore,
   calculatePreferenceScore,
-} from './score-preferences.ts';
+} from './score-preferences.js';
 
 function profile(overrides: Partial<PreferenceProfile> = {}): PreferenceProfile {
   return {

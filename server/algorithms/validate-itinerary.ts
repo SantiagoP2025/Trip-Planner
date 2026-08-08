@@ -1,5 +1,5 @@
-import type { OpeningPeriod } from '../types/common.ts';
-import type { ItineraryDay, ItineraryItem } from '../types/itinerary.ts';
+import type { OpeningPeriod } from '../types/common.js';
+import type { ItineraryDay, ItineraryItem } from '../types/itinerary.js';
 import {
   calculateBusyMinutes,
   calculateLongestContinuousMinutes,
@@ -7,8 +7,8 @@ import {
   detectOverlaps,
   MAX_CONTINUOUS_MINUTES,
   MINIMUM_FREE_MINUTES,
-} from './schedule-itinerary.ts';
-import { isBefore, minutesBetween } from './time.ts';
+} from './schedule-itinerary.js';
+import { isBefore, minutesBetween } from './time.js';
 
 // Sección 12.3: `validateItinerary()` y `repairInvalidItinerary()`.
 //

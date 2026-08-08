@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { ApiErrorBody, ApiErrorCode } from '../types/api.ts';
-import { errorResponse, jsonResponse, statusForErrorCode } from './responses.ts';
+import type { ApiErrorBody, ApiErrorCode } from '../types/api.js';
+import { errorResponse, jsonResponse, statusForErrorCode } from './responses.js';
 
 describe('statusForErrorCode', () => {
   // Sección 16.1: la tabla de códigos de la especificación, tal cual.

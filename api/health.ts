@@ -1,6 +1,6 @@
-import { HEALTH_RATE_LIMIT, RATE_LIMIT_MAX_TRACKED_KEYS } from '../server/config/limits.ts';
-import { createHealthHandler } from '../server/http/handle-health.ts';
-import { FixedWindowRateLimiter } from '../server/http/rate-limit.ts';
+import { HEALTH_RATE_LIMIT, RATE_LIMIT_MAX_TRACKED_KEYS } from '../server/config/limits.js';
+import { createHealthHandler } from '../server/http/handle-health.js';
+import { FixedWindowRateLimiter } from '../server/http/rate-limit.js';
 
 // Sección 7.1: GET /api/health.
 //

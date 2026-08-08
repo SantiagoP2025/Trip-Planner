@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import type { OpeningPeriod } from '../types/common.ts';
-import type { ItineraryDay, ItineraryItem } from '../types/itinerary.ts';
+import type { OpeningPeriod } from '../types/common.js';
+import type { ItineraryDay, ItineraryItem } from '../types/itinerary.js';
 import {
   repairInvalidItinerary,
   validateItinerary,
   type ItineraryDayWindow,
   type ItineraryValidationInput,
-} from './validate-itinerary.ts';
+} from './validate-itinerary.js';
 
 const DATE = '2026-09-10';
 

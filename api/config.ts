@@ -1,8 +1,8 @@
-import { CONFIG_RATE_LIMIT, RATE_LIMIT_MAX_TRACKED_KEYS } from '../server/config/limits.ts';
-import { readSupabasePublicConfig } from '../server/config/env.ts';
-import { createConfigHandler } from '../server/http/handle-config.ts';
-import { logError } from '../server/http/logger.ts';
-import { FixedWindowRateLimiter } from '../server/http/rate-limit.ts';
+import { CONFIG_RATE_LIMIT, RATE_LIMIT_MAX_TRACKED_KEYS } from '../server/config/limits.js';
+import { readSupabasePublicConfig } from '../server/config/env.js';
+import { createConfigHandler } from '../server/http/handle-config.js';
+import { logError } from '../server/http/logger.js';
+import { FixedWindowRateLimiter } from '../server/http/rate-limit.js';
 
 // Fase 8: GET /api/config.
 //

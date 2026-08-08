@@ -1,10 +1,10 @@
-import type { ItineraryEdit, SavedTrip } from '../types/saved-trip.ts';
-import type { ProposalType, TripProposal } from '../types/trip.ts';
+import type { ItineraryEdit, SavedTrip } from '../types/saved-trip.js';
+import type { ProposalType, TripProposal } from '../types/trip.js';
 import type {
   NewSavedTrip,
   SavedTripRepository,
   TripRequestOwnership,
-} from './saved-trip.repository.ts';
+} from './saved-trip.repository.js';
 
 // Doble de `SavedTripRepository` para los tests de los handlers: registra lo que
 // se le pide y devuelve lo que le digan.

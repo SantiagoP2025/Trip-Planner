@@ -1,4 +1,4 @@
-import { isWithinBodySizeLimit, MAX_REQUEST_BODY_BYTES } from '../config/limits.ts';
+import { isWithinBodySizeLimit, MAX_REQUEST_BODY_BYTES } from '../config/limits.js';
 
 export type JsonBodyFailure = 'UNSUPPORTED_MEDIA_TYPE' | 'BODY_TOO_LARGE' | 'MALFORMED_JSON';
 

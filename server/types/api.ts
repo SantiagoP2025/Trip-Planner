@@ -1,5 +1,5 @@
-import type { ItineraryEdit, SavedTrip } from './saved-trip.ts';
-import type { TripProposal, ValidationError } from './trip.ts';
+import type { ItineraryEdit, SavedTrip } from './saved-trip.js';
+import type { TripProposal, ValidationError } from './trip.js';
 
 // Sección 16.1: códigos que devuelve la API. Cada uno se traduce a un estado
 // HTTP de la tabla y a un mensaje en español sin detalles técnicos.

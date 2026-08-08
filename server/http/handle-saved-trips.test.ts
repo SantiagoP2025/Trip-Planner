@@ -1,20 +1,20 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { SessionResult, SessionVerifier } from '../auth/session.ts';
-import { MAX_REQUEST_BODY_BYTES } from '../config/limits.ts';
-import { MAX_SAVED_TRIPS_PER_USER } from '../config/trip-limits.ts';
-import type { SavedTripRepository } from '../repositories/saved-trip.repository.ts';
+import type { SessionResult, SessionVerifier } from '../auth/session.js';
+import { MAX_REQUEST_BODY_BYTES } from '../config/limits.js';
+import { MAX_SAVED_TRIPS_PER_USER } from '../config/trip-limits.js';
+import type { SavedTripRepository } from '../repositories/saved-trip.repository.js';
 import {
   buildSavedTrip as savedTrip,
   FakeSavedTripRepository,
-} from '../repositories/test-fixtures.ts';
+} from '../repositories/test-fixtures.js';
 import type {
   ApiErrorBody,
   DeleteSavedTripResponseBody,
   SaveTripResponseBody,
   SavedTripsResponseBody,
-} from '../types/api.ts';
-import { createSavedTripsHandler } from './handle-saved-trips.ts';
-import { FixedWindowRateLimiter, type RateLimiter } from './rate-limit.ts';
+} from '../types/api.js';
+import { createSavedTripsHandler } from './handle-saved-trips.js';
+import { FixedWindowRateLimiter, type RateLimiter } from './rate-limit.js';
 
 const USER = { id: 'usuario-1', email: 'alguien@ejemplo.test' };
 const OTHER_USER_ID = 'usuario-2';

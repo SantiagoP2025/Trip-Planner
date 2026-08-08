@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readSupabaseConfig, readSupabasePublicConfig } from './env.ts';
+import { readSupabaseConfig, readSupabasePublicConfig } from './env.js';
 
 const VALID = {
   SUPABASE_URL: 'https://proyecto.supabase.co',

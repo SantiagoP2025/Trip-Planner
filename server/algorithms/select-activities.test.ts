@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import type { ActivityCandidate } from '../types/activity.ts';
-import type { PreferenceLevel, PreferenceProfile } from '../types/common.ts';
-import { NEUTRAL_PREFERENCE_SCORE } from './score-preferences.ts';
+import type { ActivityCandidate } from '../types/activity.js';
+import type { PreferenceLevel, PreferenceProfile } from '../types/common.js';
+import { NEUTRAL_PREFERENCE_SCORE } from './score-preferences.js';
 import {
   calculateVisitsPerDay,
   MAX_VISITS_PER_DAY,
   REDUCED_VISITS_PER_DAY,
   selectActivities,
-} from './select-activities.ts';
+} from './select-activities.js';
 
 const NO_PREFERENCES: PreferenceProfile = {
   beach: 0,

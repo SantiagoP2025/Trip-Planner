@@ -1,4 +1,4 @@
-import type { TripGenerationDiagnostics, TripProposal, TripRequest } from '../types/trip.ts';
+import type { TripGenerationDiagnostics, TripProposal, TripRequest } from '../types/trip.js';
 
 // Sección 13.1: la columna `status` de trip_requests. La fila se crea en
 // `pending` antes de generar y se cierra después, así que una solicitud que se

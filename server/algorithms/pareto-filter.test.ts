@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { dominates, filterDominated } from './pareto-filter.ts';
+import { dominates, filterDominated } from './pareto-filter.js';
 
 interface Option {
   id: string;

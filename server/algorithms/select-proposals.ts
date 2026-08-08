@@ -1,5 +1,5 @@
-import type { ProposalType, TripScoreBreakdown } from '../types/trip.ts';
-import { rescoreForProfile } from './score-trip.ts';
+import type { ProposalType, TripScoreBreakdown } from '../types/trip.js';
+import { rescoreForProfile } from './score-trip.js';
 
 // Sección 10.6: tres perfiles, cada uno con sus pesos. El orden importa porque
 // una combinación solo puede ocupar una propuesta: la recomendada elige primero
